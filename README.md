@@ -26,6 +26,8 @@
 
 开启全部权限请在控制台输入：
 
+`/permission add * com.evolvedghost.mirai.steamhelper.steamhelper:*`
+
 `/permission add * com.evolvedghost.mirai.steamhelper.steamhelper:command.sh`
 
 `/permission add * com.evolvedghost.mirai.steamhelper.steamhelper:sub`
@@ -83,7 +85,7 @@
   大促推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
   并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 * * * ?'`
 * `areasSearch` 搜索区域设定，插件将从第一个区域依次搜索所有的区域的数据直到有个正确的返回，最慢速度理论为`超时重试次数`×`连接超时时间`×`areasSearch数量`
-  ，部分区域代码已在 [此处](https://github.com/EvolvedGhost/Steamhelper/docs/area.md)
+  ，部分区域代码已在 [此处](https://github.com/EvolvedGhost/Steamhelper/blob/master/docs/area.md)
   标明，默认为
   ```
   - US
@@ -91,7 +93,7 @@
   - JP
   ```
 * `areasPrice`
-  价格区域设定，比价功能将显示所有在该列表中的区域，订阅功能将以第一位作为价格基准，部分区域代码已在 [此处](https://github.com/EvolvedGhost/Steamhelper/docs/area.md)
+  价格区域设定，比价功能将显示所有在该列表中的区域，订阅功能将以第一位作为价格基准，部分区域代码已在 [此处](https://github.com/EvolvedGhost/Steamhelper/blob/master/docs/area.md)
   标明，默认为
   ```
   - CN
@@ -210,3 +212,5 @@
 [Steam-蒸汽平台](https://store.steampowered.com/) 游戏数据、周榜来源
 
 [Keylol-其乐](https://keylol.com/) Steam状态、促销来源
+
+[ExchangeRate-API](https://www.exchangerate-api.com/) 免费的汇率来源
