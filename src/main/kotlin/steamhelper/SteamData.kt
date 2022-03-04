@@ -10,7 +10,7 @@ package com.evolvedghost.mirai.steamhelper.steamhelper
  * 诚然，SteamApi会给货币种类
  * 但是如果App为免费或者获取失败时没用
  * 为避免大规模的失效现象以此为备用选项
- * 生成脚本可见项目文件 /script/?.kt
+ * 生成脚本可见项目文件 /script/area4currency.kt
  */
 val area4currency = mapOf(
     "TW" to "TWD", // 台湾省
