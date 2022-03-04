@@ -9,6 +9,8 @@ import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.ReadOnlyPluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
+import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -23,12 +25,25 @@ object Steamhelper : KotlinPlugin(JvmPluginDescription(
 ) {
     author("EvolvedGhost")
 }) {
+    val PERMISSION_EXECUTE_PUSH by lazy {
+        PermissionService.INSTANCE.register(permissionId("push"), "推送权限，可防止有人乱开关")
+    }
+    val PERMISSION_EXECUTE_SUB by lazy {
+        PermissionService.INSTANCE.register(permissionId("sub"), "订阅权限，可防止消息过多过吵")
+    }
+    val PERMISSION_EXECUTE_RELOAD by lazy {
+        PermissionService.INSTANCE.register(permissionId("reload"), "重载权限")
+    }
+
     override fun onEnable() {
         lockSubscribeMap.lock()
         lockPushMap.lock()
         SteamhelperPluginData.reload()
         lockPushMap.unlock()
         lockSubscribeMap.unlock()
+        PERMISSION_EXECUTE_PUSH
+        PERMISSION_EXECUTE_SUB
+        PERMISSION_EXECUTE_RELOAD
         SteamhelperCommand.register()
         reloadPlugin()
         logger.info { "SteamHelper已就绪，数据刷新命令已经发出，会延迟于插件启动，请稍后" }
@@ -46,65 +61,99 @@ object Steamhelper : KotlinPlugin(JvmPluginDescription(
 
 object SteamhelperCommand : CompositeCommand(
     Steamhelper,
-    "steam", "sh",
+    "sh", "#sh",
     description = "Steamhelper指令",
 ) {
     @SubCommand("week", "周榜")
+    @Description("获取Steam每周销量榜单")
     suspend fun CommandSender.week() {
         sendMessage(getWeek())
     }
 
-    @SubCommand("stat", "status", "状态")
+    @SubCommand("stat", "状态")
+    @Description("获取当前Steam状态")
     suspend fun CommandSender.stat() {
         sendMessage(getStat())
     }
 
     @SubCommand("sale", "促销")
+    @Description("获取最近的Steam促销")
     suspend fun CommandSender.sale() {
         sendMessage(getSale())
     }
 
-    @SubCommand("compare", "cp", "比价")
+    @SubCommand("cp", "比价")
+    @Description("对比某SteamApp各区域的价格")
     suspend fun CommandSender.compare(vararg AppNameOrAppid: String) {
         sendMessage(getCompare(AppNameOrAppid))
     }
 
     @OptIn(ConsoleExperimentalApi::class)
-    @SubCommand("subscribe", "sub", "订阅")
+    @SubCommand("sub", "订阅")
+    @Description("订阅一个SteamApp的价格变化")
     suspend fun CommandSender.subscribe(vararg AppNameOrAppid: String) {
-        getSubscribe(true, this, AppNameOrAppid)
+        if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_SUB)) {
+            getSubscribe(true, this, AppNameOrAppid)
+        } else {
+            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_SUB.id} 权限")
+        }
     }
 
-    @SubCommand("unsub", "unsubscribe", "取消订阅")
+    @SubCommand("unsub", "取消订阅")
+    @Description("取消订阅一个SteamApp")
     suspend fun CommandSender.unsub(vararg AppNameOrAppid: String) {
-        getSubscribe(false, this, AppNameOrAppid)
+        if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_SUB)) {
+            getSubscribe(false, this, AppNameOrAppid)
+        } else {
+            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_SUB.id} 权限")
+        }
     }
 
-    @OptIn(ConsoleExperimentalApi::class)
-    @SubCommand("list", "listsub", "查看订阅")
+    @SubCommand("list", "查看订阅")
+    @Description("查看该会话下的所有订阅")
     suspend fun CommandSender.list() {
-        getAllSubscribe(true, this)
+        if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_SUB)) {
+            getAllSubscribe(true, this)
+        } else {
+            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_SUB.id} 权限")
+        }
     }
 
-    @SubCommand("unall", "unsuball", "取消全部订阅")
+    @SubCommand("unall", "取消全部订阅")
+    @Description("取消该会话下的所有订阅")
     suspend fun CommandSender.unall() {
-        getAllSubscribe(false, this)
+        if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_SUB)) {
+            getAllSubscribe(false, this)
+        } else {
+            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_SUB.id} 权限")
+        }
     }
 
     @SubCommand("push", "推送")
+    @Description("定时推送大促、周榜信息")
     suspend fun CommandSender.push() {
-        getPush(this)
+        if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_PUSH)) {
+            getPush(this)
+        } else {
+            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_PUSH.id} 权限")
+        }
     }
 
-    @SubCommand("sr", "search", "搜索")
+    @SubCommand("sr", "搜索")
+    @Description("搜索一个SteamApp")
     suspend fun CommandSender.search(vararg AppNameOrAppid: String) {
         sendMessage(getSearch(AppNameOrAppid))
     }
 
     @SubCommand("reload", "重载")
+    @Description("重载Steamhelper")
     suspend fun CommandSender.reload() {
-        reloadPlugin()
-        sendMessage("插件重载完成")
+        if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_RELOAD)) {
+            reloadPlugin()
+            sendMessage("插件重载完成")
+        } else {
+            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_RELOAD.id} 权限")
+        }
     }
 }
 
