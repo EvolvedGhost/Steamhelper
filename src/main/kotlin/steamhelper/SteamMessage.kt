@@ -122,11 +122,7 @@ suspend fun getCompare(AppNameOrAppid: Array<out String>): String {
     if (AppNameOrAppid.size == 1 && AppNameOrAppid[0].matches("^[0-9]*$".toRegex())) {
         search.appid = AppNameOrAppid[0]
     } else {
-        var keyword = String()
-        //处理空格
-        for (i in AppNameOrAppid) {
-            keyword += "$i "
-        }
+        val keyword = AppNameOrAppid.joinToString(" ")
         when (search.search(SteamhelperPluginSetting.areasSearch.toTypedArray(), keyword)) {
             1 -> {
                 //成功
@@ -298,11 +294,7 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
                 search.appid = AppNameOrAppid[0]
                 appid = AppNameOrAppid[0].toInt()
             } else {
-                var keyword = String()
-                //处理空格
-                for (i in AppNameOrAppid) {
-                    keyword += "$i "
-                }
+                val keyword = AppNameOrAppid.joinToString(" ")
                 when (search.search(arrayOf(SteamhelperPluginSetting.areasPrice[0]), keyword)) {
                     1 -> {
                         //成功
@@ -458,11 +450,7 @@ fun getSearch(AppNameOrAppid: Array<out String>): String {
     if (AppNameOrAppid.size == 1 && AppNameOrAppid[0].matches("^[0-9]*$".toRegex())) {
         search.appid = AppNameOrAppid[0]
     } else {
-        var keyword = String()
-        //处理空格
-        for (i in AppNameOrAppid) {
-            keyword += "$i "
-        }
+        val keyword = AppNameOrAppid.joinToString(" ")
         when (search.search(SteamhelperPluginSetting.areasSearch.toTypedArray(), keyword)) {
             1 -> {
                 //成功

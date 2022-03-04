@@ -13,7 +13,6 @@ import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.info
 import java.util.concurrent.locks.ReentrantLock
 
@@ -71,7 +70,7 @@ object SteamhelperCommand : CompositeCommand(
     }
 
     @SubCommand("stat", "状态")
-    @Description("获取当前Steam状态")
+    @Description("获取最近的Steam状态")
     suspend fun CommandSender.stat() {
         sendMessage(getStat())
     }
@@ -88,14 +87,13 @@ object SteamhelperCommand : CompositeCommand(
         sendMessage(getCompare(AppNameOrAppid))
     }
 
-    @OptIn(ConsoleExperimentalApi::class)
     @SubCommand("sub", "订阅")
     @Description("订阅一个SteamApp的价格变化")
     suspend fun CommandSender.subscribe(vararg AppNameOrAppid: String) {
         if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_SUB)) {
             getSubscribe(true, this, AppNameOrAppid)
         } else {
-            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_SUB.id} 权限")
+            sendMessage("你没有订阅的权限")
         }
     }
 
@@ -105,7 +103,7 @@ object SteamhelperCommand : CompositeCommand(
         if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_SUB)) {
             getSubscribe(false, this, AppNameOrAppid)
         } else {
-            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_SUB.id} 权限")
+            sendMessage("你没有订阅的权限")
         }
     }
 
@@ -115,7 +113,7 @@ object SteamhelperCommand : CompositeCommand(
         if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_SUB)) {
             getAllSubscribe(true, this)
         } else {
-            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_SUB.id} 权限")
+            sendMessage("你没有订阅的权限")
         }
     }
 
@@ -125,7 +123,7 @@ object SteamhelperCommand : CompositeCommand(
         if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_SUB)) {
             getAllSubscribe(false, this)
         } else {
-            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_SUB.id} 权限")
+            sendMessage("你没有订阅的权限")
         }
     }
 
@@ -135,7 +133,7 @@ object SteamhelperCommand : CompositeCommand(
         if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_PUSH)) {
             getPush(this)
         } else {
-            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_PUSH.id} 权限")
+            sendMessage("你没有推送的权限")
         }
     }
 
@@ -152,7 +150,7 @@ object SteamhelperCommand : CompositeCommand(
             reloadPlugin()
             sendMessage("插件重载完成")
         } else {
-            sendMessage("你没有 ${Steamhelper.PERMISSION_EXECUTE_RELOAD.id} 权限")
+            sendMessage("你没有重载的权限")
         }
     }
 }
@@ -288,7 +286,7 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
 
     @ValueDescription(
         """
-        自定义Steam状态信息，可用参数如下：
+        自定义Steam促销信息，可用参数如下：
         换行请使用\n，其他特殊字符同理
         <nm>=促销名称
         <tl>=促销剩余时间（以X天X时X分X秒的格式）
