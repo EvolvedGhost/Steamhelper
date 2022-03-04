@@ -207,3 +207,5 @@
 [Steam-蒸汽平台](https://store.steampowered.com/) 游戏数据、周榜来源
 
 [Keylol-其乐](https://keylol.com/) Steam状态、促销来源
+
+[ExchangeRate-API](https://www.exchangerate-api.com/) 免费的汇率来源
