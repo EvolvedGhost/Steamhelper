@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.evolvedghost.mirai.steamhelper"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")

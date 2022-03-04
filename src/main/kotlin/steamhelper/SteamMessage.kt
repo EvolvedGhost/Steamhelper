@@ -31,6 +31,22 @@ fun replace(text: String, keywords: Array<String>, targets: Array<String?>): Str
     } else "错误"
 }
 
+/**
+ * 计算两个数的比例
+ * @param divisor Double? 除数
+ * @param dividend Double? 被除数
+ * @return String? 比例
+ */
+fun calcRatio(divisor: Double?, dividend: Double?): String? {
+    return if (divisor == null || dividend == null) null
+    else if (divisor < 0 || dividend < 0) null
+    else if ((divisor == 0.0) && (dividend == 0.0)) "100"
+    else if (dividend == 0.0) "∞"
+    else {
+        ((divisor / dividend) * 100).toInt().toString()
+    }
+}
+
 /** 周榜信息替换关键字 */
 val keywordsWeek = arrayOf("<tf>", "<ts>", "<ls>", "<sc>")
 
@@ -110,7 +126,8 @@ fun getSale(): String {
 val keywordsCompare = arrayOf("<id>", "<nm>", "<ds>", "<pl>")
 
 /** 比价信息榜单替换关键字 */
-val keywordsCompareList = arrayOf("<an>", "<at>", "<cr>", "<ct>", "<ip>", "<it>", "<fp>", "<ft>", "<ds>")
+val keywordsCompareList =
+    arrayOf("<an>", "<at>", "<cr>", "<ct>", "<ip>", "<it>", "<ir>", "<fp>", "<ft>", "<fr>", "<ds>")
 
 /** 比价信息榜单错误替换关键字 */
 val keywordsCompareListError = arrayOf("<if>", "<an>", "<at>", "<cr>", "<ct>")
@@ -210,8 +227,14 @@ suspend fun getCompare(AppNameOrAppid: Array<out String>): String {
                         arr[0].appCurrency,
                         String.format("%.2f", (arr[i].appPrice[0] / 100).toDouble()),
                         exchange.calc(arr[i].appPrice[0], arr[i].appCurrency),
+                        calcRatio(
+                            exchange.calcNoFormat(arr[i].appPrice[0], arr[i].appCurrency), arr[0].appPrice[0].toDouble()
+                        ),
                         String.format("%.2f", (arr[i].appPrice[1] / 100).toDouble()),
                         exchange.calc(arr[i].appPrice[1], arr[i].appCurrency),
+                        calcRatio(
+                            exchange.calcNoFormat(arr[i].appPrice[1], arr[i].appCurrency), arr[0].appPrice[1].toDouble()
+                        ),
                         arr[i].appPrice[2].toString()
                     )
                 ) + "\n"
@@ -229,7 +252,8 @@ suspend fun getCompare(AppNameOrAppid: Array<out String>): String {
 
 /** 订阅信息替换关键字 */
 val keywordsSubscribe = arrayOf(
-    "<aid>", "<anm>", "<ads>", "<aif>", "<aar>", "<acr>", "<cip>", "<cfp>", "<cds>", "<oip>", "<ofp>", "<ods>"
+    "<aid>", "<anm>", "<ads>", "<aif>", "<aar>", "<acr>", "<cip>",
+    "<cfp>", "<cds>", "<oip>", "<ofp>", "<ods>", "<rip>", "<rfp>"
 )
 
 /** 获取订阅 */
@@ -258,7 +282,9 @@ fun getSubscribe(app: SteamApp, flag: Int): String {
             app.appPrice[2].toString(),
             String.format("%.2f", (app.oldPrice[0] / 100).toDouble()),
             String.format("%.2f", (app.oldPrice[1] / 100).toDouble()),
-            app.oldPrice[2].toString()
+            app.oldPrice[2].toString(),
+            calcRatio(app.appPrice[0].toDouble(), app.oldPrice[0].toDouble()),
+            calcRatio(app.appPrice[1].toDouble(), app.oldPrice[1].toDouble())
         )
     )
 }

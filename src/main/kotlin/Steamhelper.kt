@@ -20,7 +20,7 @@ import java.util.concurrent.locks.ReentrantLock
 object Steamhelper : KotlinPlugin(JvmPluginDescription(
     id = "com.evolvedghost.mirai.steamhelper.steamhelper",
     name = "SteamHelper",
-    version = "1.0-SNAPSHOT",
+    version = "1.0.0",
 ) {
     author("EvolvedGhost")
 }) {
@@ -318,12 +318,14 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
         <ct>=换算的货币单位（以areasPrice第一位为基准）
         <ip>=初始价格
         <it>=换算的初始价格（以areasPrice第一位为基准）
+        <ir>=初始价格的相差比例（为(该区域÷areasPrice第一位区域价格)%，不带%号）
         <fp>=最终价格
         <ft>=最终价格换算
+        <fr>=最终价格的相差比例（为(该区域÷areasPrice第一位区域价格)%，不带%号）
         <ds>=当前折扣力度
         """
     )
-    val messageCompareList: String by value("<an>:<cr><fp>(<ct><ft>)")
+    val messageCompareList: String by value("<an>:<cr><fp>(<ct><ft>)(<fr>%)")
 
     @ValueDescription(
         """
@@ -354,9 +356,11 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
         <oip>=之前的初始价格
         <ofp>=之前的最终价格
         <ods>=之前的折扣力度
+        <rip>=初始价格相差比例（(当前初始价格/之前的初始价格)%，不带%号）
+        <rfp>=最终价格相差比例（(当前最终价格/之前的最终价格)%，不带%号）
         """
     )
-    val messageSubscribe: String by value("<anm>(<aid>)<aif>\n当前价格：<acr><cfp>(-<cds>%)\n之前价格：<acr><ofp>(-<ods>%)")
+    val messageSubscribe: String by value("<anm>(<aid>)<aif>\n当前价格：<acr><cfp>(-<cds>%)\n之前价格：<acr><ofp>(-<ods>%)\n相差比例：<rfp>%")
 
     @ValueDescription(
         """

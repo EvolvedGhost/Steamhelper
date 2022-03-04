@@ -57,4 +57,20 @@ class Exchange {
             }
         } else null
     }
+
+    /**
+     * 计算汇率但不排版
+     * @param price Int 价格
+     * @param currency String? 币种
+     * @return Double? 换算后价格
+     */
+    fun calcNoFormat(price: Int, currency: String?): Double? {
+        return if (currencyMap != null && currency != null) {
+            if (currencyMap!![currency] != null) {
+                price / currencyMap!![currency]!!
+            } else {
+                null
+            }
+        } else null
+    }
 }

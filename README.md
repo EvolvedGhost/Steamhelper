@@ -152,10 +152,12 @@
 > &lt;ct&gt;=换算的货币单位（以areasPrice第一位为基准）  
 > &lt;ip&gt;=初始价格  
 > &lt;it&gt;=换算的初始价格（以areasPrice第一位为基准）  
+> &lt;ir&gt;=初始价格的相差比例（为(该区域÷areasPrice第一位区域价格)%，不带%号）  
 > &lt;fp&gt;=最终价格  
 > &lt;ft&gt;=最终价格换算  
+> &lt;fr&gt;=最终价格的相差比例（为(该区域÷areasPrice第一位区域价格)%，不带%号）  
 > &lt;ds&gt;=当前折扣力度  
-> 默认为`'<an>:<cr><fp>(<ct><ft>)'`
+> 默认为`'<an>:<cr><fp>(<ct><ft>)(<fr>%)'`
 
 * `messageCompareListError` 自定义比价参数榜单信息(错误信息如免费、锁区、获取错误等)，替换`messageCompare`的`<pl>`可用参数如下：
 
@@ -182,7 +184,10 @@
 > &lt;oip&gt;=之前的初始价格  
 > &lt;ofp&gt;=之前的最终价格  
 > &lt;ods&gt;=之前的折扣力度  
-> 默认为`"<anm>(<aid>)<aif>\n当前价格：<acr><cfp>(-<cds>%)\n之前价格：<acr><ofp>(-<ods>%)"`
+> &lt;rip&gt;=初始价格相差比例（(当前初始价格/之前的初始价格)%，不带%号）  
+> &lt;rfp&gt;=最终价格相差比例（(当前最终价格/之前的最终价格)%，不带%号）  
+> 默认为`"<anm>(<aid>)<aif>\n当前价格：<acr><cfp>(-<cds>%)\n之前价格：<acr><ofp>(-<ods>%)
+相差比例：<rfp>%"`
 
 * `messageSearch` 自定义搜索参数，可用参数如下：
 
