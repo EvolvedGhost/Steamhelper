@@ -26,6 +26,8 @@
 
 开启全部权限请在控制台输入：
 
+`/permission add * com.evolvedghost.mirai.steamhelper.steamhelper:*`
+
 `/permission add * com.evolvedghost.mirai.steamhelper.steamhelper:command.sh`
 
 `/permission add * com.evolvedghost.mirai.steamhelper.steamhelper:sub`
