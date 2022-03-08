@@ -56,11 +56,15 @@ class SteamInfo {
             // 获取Steam大促时间
             var textDate = get.select("script:containsData(count_down_date)").html()
             isSaleStart = saleTitle?.contains("正在进行中") ?: false
-            textDate =
-                textDate.substringAfter('"').substringBefore('"') + textDate.substringAfter('+').substringAfter('"')
-                    .substringBefore('"')
-            // 格式化Steam大促时间为时间戳（格式样例：2022-03-01 02:00:00.000+08:00）
-            saleTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSXXX").parse(textDate).time
+            if (saleTitle?.contains("促销已经结束") == true) {
+                saleTimestamp = -1
+            } else {
+                textDate =
+                    textDate.substringAfter('"').substringBefore('"') + textDate.substringAfter('+').substringAfter('"')
+                        .substringBefore('"')
+                // 格式化Steam大促时间为时间戳（格式样例：2022-03-01 02:00:00.000+08:00）
+                saleTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSXXX").parse(textDate).time
+            }
             isInit = true
             true
         } catch (e: Exception) {
@@ -76,9 +80,13 @@ class SteamInfo {
      */
     fun getSteamSaleFormattedTime(): String? {
         return if (saleTimestamp != null) {
-            val dateFormat = SimpleDateFormat(timeFormat)
-            dateFormat.timeZone = TimeZone.getTimeZone(timeZone)
-            dateFormat.format(saleTimestamp)
+            if (saleTimestamp!! < 0) {
+                "已结束"
+            } else {
+                val dateFormat = SimpleDateFormat(timeFormat)
+                dateFormat.timeZone = TimeZone.getTimeZone(timeZone)
+                dateFormat.format(saleTimestamp)
+            }
         } else null
     }
 
@@ -96,6 +104,8 @@ class SteamInfo {
                 timeDiff = (saleTimestamp!! - dateNow) / 1000
                 timeText = if (isSaleStart) "预计结束"
                 else "还有"
+            } else if (saleTimestamp!! < 0) {
+                return "已结束"
             } else {
                 timeDiff = (dateNow - saleTimestamp!!) / 1000
                 timeText = "已进行"
