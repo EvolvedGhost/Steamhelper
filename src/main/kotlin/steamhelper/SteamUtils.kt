@@ -10,6 +10,7 @@ import com.evolvedghost.mirai.steamhelper.Steamhelper.reload
 import com.evolvedghost.mirai.steamhelper.Steamhelper.save
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -115,6 +116,8 @@ fun sendSubscribe(appid: Int, mutableMap: MutableMap<Long, MutableMap<Long, Int>
                         }
                         if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
                     }
+                    // 防止发送过快风控
+                    delay((500..2000).random().toLong())
                 }
             } else {
                 // Bot不在线
@@ -264,6 +267,8 @@ class SaleJob : Job {
         for (bot in map.keys) {
             for (contact in map[bot]!!.keys) {
                 GlobalScope.launch { send(bot, contact, getSale()) }
+                // 防止发送过快风控，不会阻塞Mirai线程
+                Thread.sleep((500..2000).random().toLong())
             }
         }
         Steamhelper.logger.info("大促信息推送完毕")
@@ -281,6 +286,8 @@ class WeekJob : Job {
         for (bot in map.keys) {
             for (contact in map[bot]!!.keys) {
                 GlobalScope.launch { send(bot, contact, getWeek()) }
+                // 防止发送过快风控，不会阻塞Mirai线程
+                Thread.sleep((500..2000).random().toLong())
             }
         }
         Steamhelper.logger.info("周榜信息推送完毕")

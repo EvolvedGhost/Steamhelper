@@ -55,7 +55,7 @@ class SteamInfo {
             saleTitle = get.getElementById("steam_monitor")?.getElementsByTag("a")?.get(2)?.text()?.replace("...", "")
             // 获取Steam大促时间
             var textDate = get.select("script:containsData(count_down_date)").html()
-            isSaleStart = textDate.contains("正在进行中")
+            isSaleStart = saleTitle?.contains("正在进行中") ?: false
             textDate =
                 textDate.substringAfter('"').substringBefore('"') + textDate.substringAfter('+').substringAfter('"')
                     .substringBefore('"')
