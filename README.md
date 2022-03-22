@@ -199,6 +199,16 @@
 > &lt;ds&gt;=App介绍  
 > 默认为`"<nm>(<id>)\n<ds>"`
 
+## 编译
+
+如果您需要自行编译，使用在文件目录使用以下命令即可
+
+Windows：`./gradlew.bat buildPlugin`
+
+Linux：`./gradlew buildPlugin`
+
+编译好的jar文件可以在`/build/mirai`下找到
+
 ## 特别感谢
 
 [Mirai](https://github.com/mamoe/mirai) 提供QQ机器人
