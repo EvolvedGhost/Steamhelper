@@ -23,7 +23,7 @@ class Exchange {
      * @return Boolean 是否成功
      */
     fun refresh(area: String): Boolean {
-        return if (System.currentTimeMillis() < timestamp && currencyMap != null && mapArea == area) {
+        return if (System.currentTimeMillis() < timestamp && !currencyMap.isNullOrEmpty() && mapArea == area) {
             true
         } else {
             exception = String()
@@ -31,6 +31,7 @@ class Exchange {
                 val json =
                     JsonParser.parseString(SSLHelper().getBody("https://open.er-api.com/v6/latest/$area")).asJsonObject
                 timestamp = json["time_next_update_unix"].asLong * 1000
+                @Suppress("UNCHECKED_CAST")
                 currencyMap = Gson().fromJson(json["rates"], HashMap::class.java) as HashMap<String, Double>
                 mapArea = area
                 true
@@ -49,7 +50,7 @@ class Exchange {
      * @return String? 换算后价格
      */
     fun calc(price: Int, currency: String?): String? {
-        return if (currencyMap != null && currency != null) {
+        return if (!currencyMap.isNullOrEmpty() && !currency.isNullOrEmpty()) {
             if (currencyMap!![currency] != null) {
                 String.format("%.2f", (price / currencyMap!![currency]!! / 100))
             } else {
@@ -65,7 +66,7 @@ class Exchange {
      * @return Double? 换算后价格
      */
     fun calcNoFormat(price: Int, currency: String?): Double? {
-        return if (currencyMap != null && currency != null) {
+        return if (!currencyMap.isNullOrEmpty() && !currency.isNullOrEmpty()) {
             if (currencyMap!![currency] != null) {
                 price / currencyMap!![currency]!!
             } else {

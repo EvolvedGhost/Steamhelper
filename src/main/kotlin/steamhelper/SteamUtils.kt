@@ -145,7 +145,7 @@ class RefreshThread : Thread() {
         }
         if (lockSteamInfo.isHeldByCurrentThread) lockSteamInfo.unlock()
         // 刷新汇率信息
-        if (area4currency[SteamhelperPluginSetting.areasPrice[0]] != null) {
+        if (!area4currency[SteamhelperPluginSetting.areasPrice[0]].isNullOrEmpty()) {
             lockExchange.lock()
             try {
                 if (!exchange.refresh(area4currency[SteamhelperPluginSetting.areasPrice[0]]!!)) {
@@ -204,7 +204,7 @@ class RefreshThread : Thread() {
         if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
         if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
         // 刷新订阅的游戏信息
-        if (area4currency[SteamhelperPluginSetting.areasPrice[0]] != null) {
+        if (!area4currency[SteamhelperPluginSetting.areasPrice[0]].isNullOrEmpty()) {
             lockMapSub.lock()
             val tempMapSub = mapSub
             if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
@@ -224,7 +224,7 @@ class RefreshThread : Thread() {
                                 lockSubscribeMap.lock()
                                 val map = SteamhelperPluginData.subscribeMap
                                 if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
-                                if (map[i] != null) {
+                                if (!map[i].isNullOrEmpty()) {
                                     // 发送订阅信息
                                     sendSubscribe(i, map[i]!!, message)
                                 }
@@ -236,7 +236,7 @@ class RefreshThread : Thread() {
                                 lockSubscribeMap.lock()
                                 val map = SteamhelperPluginData.subscribeMap[i]
                                 if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
-                                if (map != null) {
+                                if (!map.isNullOrEmpty()) {
                                     for (bot in map.keys) {
                                         for (contact in map[bot]!!.keys) {
                                             addErrors(i, bot, contact)

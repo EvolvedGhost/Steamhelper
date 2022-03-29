@@ -61,7 +61,7 @@ class SteamApp() {
                 val get = SSLHelper().getDocument(url)
                 localAppid =
                     get.getElementById("search_resultsRows")?.getElementsByTag("a")?.first()?.attr("data-ds-appid")
-                if (localAppid != null) {
+                if (!localAppid.isNullOrEmpty()) {
                     appid = localAppid
                     return 1
                 }
@@ -81,7 +81,7 @@ class SteamApp() {
      * @return Int 刷新状态（0=无结果，1=成功，-1=失败，-2=appid为null程序逻辑存在错误）
      */
     fun refreshInfo(areas: Array<String>): Int {
-        if (appid != null) {
+        if (!appid.isNullOrEmpty()) {
             exception = String()
             var counter = 0
             for (area in areas) {
@@ -113,7 +113,7 @@ class SteamApp() {
      */
     fun refreshPriceAndInfo(area: String): Int {
         oldPrice = appPrice
-        if (appid != null) {
+        if (!appid.isNullOrEmpty()) {
             exception = String()
             // 提取json字段中的价格
             try {
