@@ -136,7 +136,7 @@ class SteamApp() {
                     }
                 } else {
                     appCurrency = area4currency[area]
-                    arrayOf(-1, -1, -1)
+                    appPrice=arrayOf(-1, -1, -1)
                     return -1
                 }
             } catch (e: Exception) {
