@@ -250,7 +250,7 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
 
     @ValueDescription(
         """Epic周免推送时间，采用Cron表达式
-        默认为0 0 12 ? * MON ， 意为每周一12点发送
+        默认为0 0 12 ? * FRI ， 意为每周五12点发送
     """
     )
     val timePushEpic: String by value("0 0 12 ? * FRI")
