@@ -1,4 +1,4 @@
-package com.evolvedghost.mirai.steamhelper.steamhelper
+package com.evolvedghost.mirai.steamhelper.utils
 
 import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
 import org.jsoup.Jsoup

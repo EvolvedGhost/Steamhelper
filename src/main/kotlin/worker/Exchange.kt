@@ -1,6 +1,7 @@
-package com.evolvedghost.mirai.steamhelper.steamhelper
+package com.evolvedghost.mirai.steamhelper.worker
 
 import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
+import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 

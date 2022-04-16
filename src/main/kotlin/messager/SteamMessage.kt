@@ -3,9 +3,15 @@
  * 用于编写插件最终发出的信息的整理与格式化
  */
 
-package com.evolvedghost.mirai.steamhelper.steamhelper
+package com.evolvedghost.mirai.steamhelper.messager
 
 import com.evolvedghost.mirai.steamhelper.*
+import com.evolvedghost.mirai.steamhelper.messager.handler.getFormattedTime
+import com.evolvedghost.mirai.steamhelper.messager.handler.replace
+import com.evolvedghost.mirai.steamhelper.messager.handler.setPush
+import com.evolvedghost.mirai.steamhelper.messager.handler.setSearch
+import com.evolvedghost.mirai.steamhelper.steamhelper.*
+import com.evolvedghost.mirai.steamhelper.worker.SteamApp
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandSender
@@ -13,23 +19,6 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ContactUtils.getContact
 import net.mamoe.mirai.utils.info
-
-/**
- * 用于替换文本串
- * @param text String 要被替换的文本
- * @param keywords Array<String> 替换关键字
- * @param targets Array<String?> 替换结果
- * @return String
- */
-fun replace(text: String, keywords: Array<String>, targets: Array<String?>): String {
-    return if (keywords.size == targets.size) {
-        var finalText = text
-        for (i in keywords.indices) {
-            finalText = finalText.replace(keywords[i], targets[i].toString())
-        }
-        finalText
-    } else "错误"
-}
 
 /**
  * 计算两个数的比例
@@ -58,15 +47,18 @@ fun getWeek(): String {
     return if (steamWeek.isInit) {
         // 复制steamWeek
         lockSteamWeek.lock()
-        val tmp = steamWeek
+        val titleArr = steamWeek.titleArr.clone()
+        val linkArr = steamWeek.linkArr.clone()
+        val timestamp = steamWeek.timestamp
+        val url = steamWeek.url
         if (lockSteamWeek.isHeldByCurrentThread) lockSteamWeek.unlock()
         // 处理messageWeekList
         val messageList = StringBuilder()
-        for (i in tmp.titleArr.indices) {
+        for (i in titleArr.indices) {
             messageList.append(
                 replace(
                     SteamhelperPluginSetting.messageWeekList, keywordsWeekList, arrayOf(
-                        tmp.titleArr[i], tmp.linkArr[i]
+                        titleArr[i], linkArr[i]
                     )
                 ) + "\n"
             )
@@ -74,7 +66,7 @@ fun getWeek(): String {
         // 处理messageWeek并返回
         replace(
             SteamhelperPluginSetting.messageWeek, keywordsWeek, arrayOf(
-                tmp.getSteamWeeklyFormattedTime(), tmp.timestamp.toString(), messageList.toString(), tmp.url
+                getFormattedTime(timestamp), timestamp.toString(), messageList.toString(), url
             )
         )
     } else {
@@ -90,11 +82,12 @@ fun getStat(): String {
     return if (steamInfo.isInit) {
         // 复制steamInfo
         lockSteamInfo.lock()
-        val tmp = steamInfo
+        val statusStore = steamInfo.statusStore
+        val statusCommunity = steamInfo.statusCommunity
         if (lockSteamInfo.isHeldByCurrentThread) lockSteamInfo.unlock()
         // 处理messageStatus
         replace(
-            SteamhelperPluginSetting.messageStatus, keywordsStat, arrayOf(tmp.statusStore, tmp.statusCommunity)
+            SteamhelperPluginSetting.messageStatus, keywordsStat, arrayOf(statusStore, statusCommunity)
         )
     } else {
         "相关信息暂未初始化请稍后，如长期出现此信息请检查日志和机器人网络状况"
@@ -109,12 +102,14 @@ fun getSale(): String {
     return if (steamInfo.isInit) {
         // 复制steamInfo
         lockSteamInfo.lock()
-        val tmp = steamInfo
+        val saleTitle = steamInfo.saleTitle
+        val diffTime = steamInfo.getSteamSaleDiffTime()
+        val saleTimestamp = steamInfo.saleTimestamp
         if (lockSteamInfo.isHeldByCurrentThread) lockSteamInfo.unlock()
         // 处理messageSale
         replace(
             SteamhelperPluginSetting.messageSale, keywordsSale, arrayOf(
-                tmp.saleTitle, tmp.getSteamSaleDiffTime(), tmp.getSteamSaleFormattedTime(), tmp.saleTimestamp.toString()
+                saleTitle, diffTime, getFormattedTime(saleTimestamp),saleTimestamp.toString()
             )
         )
     } else {
@@ -135,23 +130,17 @@ val keywordsCompareListError = arrayOf("<if>", "<an>", "<at>", "<cr>", "<ct>")
 /** 获取比价 */
 suspend fun getCompare(AppNameOrAppid: Array<out String>): String {
     val search = SteamApp()
-    // 判断是否为纯数字
-    if (AppNameOrAppid.size == 1 && AppNameOrAppid[0].matches("^[0-9]*$".toRegex())) {
-        search.appid = AppNameOrAppid[0]
-    } else {
-        val keyword = AppNameOrAppid.joinToString(" ")
-        when (search.search(SteamhelperPluginSetting.areasSearch.toTypedArray(), keyword)) {
-            1 -> {
-                //成功
-            }
-            0 -> {
-                return "未找到相应的App"
-            }
-            else -> {
-                Steamhelper.logger.info { "SteamHelper在搜索的时候得到了一个错误：" }
-                Steamhelper.logger.info { search.exception }
-                return "搜索发生错误，如长期出现此信息请检查日志和机器人网络状况"
-            }
+    when (setSearch(search, AppNameOrAppid)) {
+        1 -> {
+            //成功
+        }
+        0 -> {
+            return "未找到相应的App"
+        }
+        else -> {
+            Steamhelper.logger.info { "SteamHelper在搜索的时候得到了一个错误：" }
+            Steamhelper.logger.info { search.exception }
+            return "搜索发生错误，如长期出现此信息请检查日志和机器人网络状况"
         }
     }
     if (search.appid == null) {
@@ -432,39 +421,8 @@ suspend fun getAllSubscribe(flag: Boolean, cs: CommandSender) {
 }
 
 /** 获取推送信息 */
-@OptIn(ConsoleExperimentalApi::class)
 suspend fun getPush(cs: CommandSender) {
-    if (cs.bot?.id != null && cs.subject?.id != null) {
-        val botID = cs.bot?.id!!
-        val contactID = cs.subject?.id!!
-        try {
-            val contact = Bot.getInstance(botID).getContact(contactID, true)
-            // 进行一次试发送，如失败则不允许订阅
-            contact.sendMessage("查询您的推送状态……")
-            lockPushMap.lock()
-            try {
-                if (!SteamhelperPluginData.pushMap.contains(botID)) {
-                    SteamhelperPluginData.pushMap[botID] = mutableMapOf(contactID to 0)
-                } else if (!SteamhelperPluginData.pushMap[botID]!!.contains(contactID)) {
-                    SteamhelperPluginData.pushMap[botID]!![contactID] = 0
-                } else {
-                    SteamhelperPluginData.pushMap[botID]!!.remove(contactID)
-                    cs.sendMessage("您的推送已关闭")
-                    if (lockPushMap.isHeldByCurrentThread) lockPushMap.unlock()
-                    return
-                }
-            } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
-            }
-            if (lockPushMap.isHeldByCurrentThread) lockPushMap.unlock()
-            cs.sendMessage("您的推送已开启")
-        } catch (e: Exception) {
-            if (SteamhelperPluginSetting.debug) e.printStackTrace()
-            cs.sendMessage("操作推送失败，机器人无法给您发送信息，错误原因：\n$e")
-        }
-    } else {
-        cs.sendMessage("暂不支持该渠道推送操作")
-    }
+    setPush(cs, SteamhelperPluginData.pushMap, lockPushMap, "Steam周榜")
 }
 
 /** 搜索信息替换关键字 */
@@ -472,23 +430,17 @@ val keywordsSearch = arrayOf("<id>", "<nm>", "<ds>")
 
 fun getSearch(AppNameOrAppid: Array<out String>): String {
     val search = SteamApp()
-    // 判断是否为纯数字
-    if (AppNameOrAppid.size == 1 && AppNameOrAppid[0].matches("^[0-9]*$".toRegex())) {
-        search.appid = AppNameOrAppid[0]
-    } else {
-        val keyword = AppNameOrAppid.joinToString(" ")
-        when (search.search(SteamhelperPluginSetting.areasSearch.toTypedArray(), keyword)) {
-            1 -> {
-                //成功
-            }
-            0 -> {
-                return "未找到相应的App"
-            }
-            else -> {
-                Steamhelper.logger.info { "SteamHelper在搜索的时候得到了一个错误：" }
-                Steamhelper.logger.info { search.exception }
-                return "搜索发生错误，如长期出现此信息请检查日志和机器人网络状况"
-            }
+    when (setSearch(search, AppNameOrAppid)) {
+        1 -> {
+            //成功
+        }
+        0 -> {
+            return "未找到相应的App"
+        }
+        else -> {
+            Steamhelper.logger.info { "SteamHelper在搜索的时候得到了一个错误：" }
+            Steamhelper.logger.info { search.exception }
+            return "搜索发生错误，如长期出现此信息请检查日志和机器人网络状况"
         }
     }
     if (search.appid == null) {

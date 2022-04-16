@@ -1,6 +1,8 @@
-package com.evolvedghost.mirai.steamhelper.steamhelper
+package com.evolvedghost.mirai.steamhelper.worker
 
 import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
+import com.evolvedghost.mirai.steamhelper.steamhelper.area4currency
+import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
 import com.google.gson.JsonParser
 import java.net.URLEncoder
 

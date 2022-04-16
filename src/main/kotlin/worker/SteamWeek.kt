@@ -1,6 +1,7 @@
-package com.evolvedghost.mirai.steamhelper.steamhelper
+package com.evolvedghost.mirai.steamhelper.worker
 
 import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
+import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -11,12 +12,6 @@ import java.util.*
 class SteamWeek {
     /** Steam每周榜单获取源 */
     var url = SteamhelperPluginSetting.urlWeekly
-
-    /** Steam每周榜单更新时间输出格式，默认格式为：2022-02-20 16:00:00 星期日 */
-    var timeFormat = SteamhelperPluginSetting.timeFormat
-
-    /** Steam每周榜单更新时间输出时区，默认格式为：东八区 */
-    var timeZone = SteamhelperPluginSetting.timeZone
 
     /** Steam每周榜单更新时间戳，需要检查是否为null */
     var timestamp: Long = 0
@@ -58,17 +53,5 @@ class SteamWeek {
             exception = e.toString()
             false
         }
-    }
-
-    /**
-     * 返回Steam每周榜单游戏格式化后更新时间
-     * @return String? Steam每周榜单游戏格式化后更新时间，需要检查是否为null
-     */
-    fun getSteamWeeklyFormattedTime(): String? {
-        return if (isInit) {
-            val dateFormat = SimpleDateFormat(timeFormat)
-            dateFormat.timeZone = TimeZone.getTimeZone(timeZone)
-            dateFormat.format(timestamp)
-        } else null
     }
 }

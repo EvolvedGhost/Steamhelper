@@ -1,5 +1,6 @@
 package com.evolvedghost.mirai.steamhelper
 
+import com.evolvedghost.mirai.steamhelper.messager.*
 import com.evolvedghost.mirai.steamhelper.steamhelper.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
@@ -20,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock
 object Steamhelper : KotlinPlugin(JvmPluginDescription(
     id = "com.evolvedghost.mirai.steamhelper.steamhelper",
     name = "SteamHelper",
-    version = "1.0.2",
+    version = "1.0.3",
 ) {
     author("EvolvedGhost")
 }) {
@@ -40,9 +41,12 @@ object Steamhelper : KotlinPlugin(JvmPluginDescription(
         SteamhelperPluginData.reload()
         lockPushMap.unlock()
         lockSubscribeMap.unlock()
+        SteamhelperPluginData.save()
         PERMISSION_EXECUTE_PUSH
         PERMISSION_EXECUTE_SUB
         PERMISSION_EXECUTE_RELOAD
+        SteamhelperPluginSetting.reload()
+        SteamhelperPluginSetting.save()
         SteamhelperCommand.register()
         reloadPlugin()
         logger.info { "SteamHelper已就绪，数据刷新命令已经发出，会延迟于插件启动，请稍后" }
@@ -144,19 +148,36 @@ object SteamhelperCommand : CompositeCommand(
     }
 
     @SubCommand("reload", "重载")
-    @Description("重载Steamhelper")
+    @Description("重载并刷新Steamhelper")
     suspend fun CommandSender.reload() {
         if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_RELOAD)) {
             reloadPlugin()
-            sendMessage("插件重载完成")
+            sendMessage("插件重载完成，数据刷新命令已发出")
         } else {
             sendMessage("你没有重载的权限")
+        }
+    }
+
+    @SubCommand("epic")
+    @Description("获取epic周免信息")
+    suspend fun CommandSender.epic() {
+        sendMessage(getEpic())
+    }
+
+    @SubCommand("pushepic", "推送epic")
+    @Description("开启epic周免信息推送")
+    suspend fun CommandSender.pushepic() {
+        if (this.hasPermission(Steamhelper.PERMISSION_EXECUTE_PUSH)) {
+            getEpicPush(this)
+        } else {
+            sendMessage("你没有推送的权限")
         }
     }
 }
 
 val lockSubscribeMap = ReentrantLock()
 val lockPushMap = ReentrantLock()
+val lockPushEpicMap = ReentrantLock()
 
 object SteamhelperPluginData : AutoSavePluginData("Steamhelper") { // "name" 是保存的文件名 (不带后缀)
     /**
@@ -167,6 +188,9 @@ object SteamhelperPluginData : AutoSavePluginData("Steamhelper") { // "name" 是
 
     /** 存储推送表，储存结构为：Map<机器人QQ,Map<联系人id，错误次数>> */
     val pushMap: MutableMap<Long, MutableMap<Long, Int>> by value()
+
+    /** 存储Epic推送表，储存结构为：Map<机器人QQ,Map<联系人id，错误次数>> */
+    val pushEpicMap: MutableMap<Long, MutableMap<Long, Int>> by value()
 }
 
 object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
@@ -223,6 +247,13 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
     """
     )
     val timePushWeek: String by value("0 0 12 ? * MON")
+
+    @ValueDescription(
+        """Epic周免推送时间，采用Cron表达式
+        默认为0 0 12 ? * MON ， 意为每周一12点发送
+    """
+    )
+    val timePushEpic: String by value("0 0 12 ? * FRI")
 
     @ValueDescription(
         """周榜大促和订阅的游戏优惠数据更新时间间隔，采用Cron表达式
@@ -372,4 +403,26 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
         """
     )
     val messageSearch: String by value("<nm>(<id>)\n<ds>")
+
+    @ValueDescription(
+        """
+        Epic当前限免信息：
+        换行请使用\n，其他特殊字符同理
+        <cls>=当前限免名单（使用下面messageEpicPromoteList格式）
+        <fls>=未来限免名单（使用下面messageEpicPromoteList格式）
+        """
+    )
+    val messageEpicPromote: String by value("Epic本周免费游戏：\n<cls>\n未来免费游戏：\n<fls>")
+
+    @ValueDescription(
+        """
+        Epic当前限免信息列表：
+        换行请使用\n，其他特殊字符同理，每项都会默认带换行
+        <nm>=App名称
+        <ds>=App介绍
+        <tf>=开始时间（以timeFormat格式）
+        <ts>=开始时间（以时间戳的格式）
+        """
+    )
+    val messageEpicPromoteList: String by value("<nm>[开始于：<tf>]")
 }

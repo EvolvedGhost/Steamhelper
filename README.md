@@ -17,8 +17,8 @@
 
 ## 权限
 
-| 权限                                                        | 功能                           |
-|-----------------------------------------------------------|------------------------------|
+| 权限                                                          | 功能                           |
+|-------------------------------------------------------------|------------------------------|
 | `com.evolvedghost.mirai.steamhelper.steamhelper:command.sh` | Steamhelper基础指令，不开启无法使用      |
 | `com.evolvedghost.mirai.steamhelper.steamhelper:sub`        | Steamhelper订阅权限，可以防止订阅消息过多过吵 |
 | `com.evolvedghost.mirai.steamhelper.steamhelper:push`       | Steamhelper推送权限，可以防止有人随意开关推送 |
@@ -48,12 +48,14 @@
 | `/<sh, #sh> <week, 周榜>`                 | 获取Steam每周销量榜单              |
 | `/<sh, #sh> <sale, 促销>`                 | 获取最近的Steam促销               |
 | `/<sh, #sh> <stat, 状态>`                 | 获取最近的Steam状态               |
+| `/<sh, #sh> <epic>`                     | 获取最近的Epic周免信息              |
 | `/<sh, #sh> <sr, 搜索> [AppID, 关键字]`      | 搜索一个SteamApp               |
 | `/<sh, #sh> <sub, 订阅> [AppID, 关键字]`     | 订阅一个SteamApp的价格变化（需要sub权限） |
 | `/<sh, #sh> <unsub, 取消订阅> [AppID, 关键字]` | 取消订阅一个SteamApp（需要sub权限）    |
 | `/<sh, #sh> <list, 查看订阅>`               | 查看该会话下的所有订阅 （需要sub权限）      |
 | `/<sh, #sh> <unall, 取消全部订阅>`            | 取消该会话下的所有订阅 （需要sub权限）      |
 | `/<sh, #sh> <push, 推送>`                 | 定时推送大促、周榜信息 （需要push权限）     |
+| `/<sh, #sh> <pushepic, 推送epic>`         | 定时推送Epic平台周免信息 （需要push权限）  |
 | `/<sh, #sh> <reload, 重载> [AppID, 关键字]`  | 重载Steamhelper（需要reload权限）  |
 
 ## 设置
@@ -81,6 +83,9 @@
 * `timePushWeek`
   大促推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
   并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 12 ? * MON'`
+* `timePushEpic`
+    Epic周免推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
+    并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 12 ? * FRI'`
 * `timeRefresh`
   大促推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
   并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 * * * ?'`
@@ -198,6 +203,22 @@
 > &lt;nm&gt;=App名称  
 > &lt;ds&gt;=App介绍  
 > 默认为`"<nm>(<id>)\n<ds>"`
+
+* `messageEpicPromote` 自定义Epic周免参数，可用参数如下：
+
+> 换行请使用\n，其他特殊字符同理  
+> &lt;cls&gt;=当前限免名单（使用下面messageEpicPromoteList格式）
+> &lt;fls&gt;=未来限免名单（使用下面messageEpicPromoteList格式）
+> 默认为`"Epic本周免费游戏：\n<cls>\n未来免费游戏：\n<fls>"`
+
+* `messageEpicPromoteList` 自定义Epic周免列表参数，可用参数如下：
+
+> 换行请使用\n，其他特殊字符同理  
+> &lt;nm&gt;=App名称
+> &lt;ds&gt;=App介绍
+> &lt;tf&gt;=开始时间（以timeFormat格式）
+> &lt;ts&gt;=开始时间（以时间戳的格式）
+> 默认为`"<nm>[开始于：<tf>]"`
 
 ## 编译
 

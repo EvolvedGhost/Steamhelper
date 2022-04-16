@@ -1,6 +1,6 @@
 /**
- * SteamData.kt
- * 储存一些插件其他全局静态存储的数据
+ * AreaMap.kt
+ * 储存区域与货币的互换表
  */
 
 package com.evolvedghost.mirai.steamhelper.steamhelper

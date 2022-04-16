@@ -1,8 +1,8 @@
-package com.evolvedghost.mirai.steamhelper.steamhelper
+package com.evolvedghost.mirai.steamhelper.worker
 
 import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
+import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
 import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * Steam相关信息
@@ -12,12 +12,6 @@ import java.util.*
 class SteamInfo {
     /** Steam状态与大促情况获取源 */
     var url = SteamhelperPluginSetting.urlInfo
-
-    /** Steam大促时间输出格式，默认格式为：2022-02-20 16:00:00 星期日 */
-    var timeFormat = SteamhelperPluginSetting.timeFormat
-
-    /** Steam大促时间输出时区，默认格式为：东八区 */
-    var timeZone = SteamhelperPluginSetting.timeZone
 
     /** 上次报错的原因，需要检查是否为null */
     var exception: String? = null
@@ -72,22 +66,6 @@ class SteamInfo {
             exception = e.toString()
             false
         }
-    }
-
-    /**
-     * 返回Steam大促格式化后时间
-     * @return String? Steam大促格式化后时间，需要检查是否为null
-     */
-    fun getSteamSaleFormattedTime(): String? {
-        return if (saleTimestamp != null) {
-            if (saleTimestamp!! < 0) {
-                "已结束"
-            } else {
-                val dateFormat = SimpleDateFormat(timeFormat)
-                dateFormat.timeZone = TimeZone.getTimeZone(timeZone)
-                dateFormat.format(saleTimestamp)
-            }
-        } else null
     }
 
     /**

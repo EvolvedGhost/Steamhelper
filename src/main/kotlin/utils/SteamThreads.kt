@@ -1,13 +1,17 @@
 /**
- * SteamUtils.kt
+ * SteamThreads.kt
  * 储存插件后台所需的Job和线程
- * 以及一些有用的函数
  */
 package com.evolvedghost.mirai.steamhelper.steamhelper
 
 import com.evolvedghost.mirai.steamhelper.*
 import com.evolvedghost.mirai.steamhelper.Steamhelper.reload
 import com.evolvedghost.mirai.steamhelper.Steamhelper.save
+import com.evolvedghost.mirai.steamhelper.messager.getEpic
+import com.evolvedghost.mirai.steamhelper.messager.getSale
+import com.evolvedghost.mirai.steamhelper.messager.getSubscribe
+import com.evolvedghost.mirai.steamhelper.messager.getWeek
+import com.evolvedghost.mirai.steamhelper.worker.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -26,14 +30,18 @@ val steamWeek = SteamWeek()
 val lockSteamInfo = ReentrantLock()
 val steamInfo = SteamInfo()
 val lockExchange = ReentrantLock()
+val epicPromote = EpicPromotions()
+val lockEpicPromote = ReentrantLock()
 val exchange = Exchange()
 val lockScheduler = ReentrantLock()
 var mapSub = mutableMapOf<Int, SteamApp>()
 var lockMapSub = ReentrantLock()
 var scheduler: Scheduler = StdSchedulerFactory().scheduler
 
+
 /** 重载插件 */
 fun reloadPlugin() {
+    lockEpicPromote.lock()
     lockSteamWeek.lock()
     lockSteamInfo.lock()
     lockMapSub.lock()
@@ -45,6 +53,7 @@ fun reloadPlugin() {
     if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
     if (lockSteamWeek.isHeldByCurrentThread) lockSteamWeek.unlock()
     if (lockSteamInfo.isHeldByCurrentThread) lockSteamInfo.unlock()
+    if (lockEpicPromote.isHeldByCurrentThread) lockEpicPromote.unlock()
     RefreshThread().start()
 
     lockScheduler.lock()
@@ -144,6 +153,13 @@ class RefreshThread : Thread() {
             Steamhelper.logger.info(steamInfo.exception)
         }
         if (lockSteamInfo.isHeldByCurrentThread) lockSteamInfo.unlock()
+        // 刷新信息
+        lockEpicPromote.lock()
+        if (!epicPromote.refresh()) {
+            Steamhelper.logger.info("Epic周免刷新失败：")
+            Steamhelper.logger.info(epicPromote.exception)
+        }
+        if (lockEpicPromote.isHeldByCurrentThread) lockEpicPromote.unlock()
         // 刷新汇率信息
         if (!area4currency[SteamhelperPluginSetting.areasPrice[0]].isNullOrEmpty()) {
             lockExchange.lock()
@@ -206,7 +222,7 @@ class RefreshThread : Thread() {
         // 刷新订阅的游戏信息
         if (!area4currency[SteamhelperPluginSetting.areasPrice[0]].isNullOrEmpty()) {
             lockMapSub.lock()
-            val tempMapSub = mapSub
+            val tempMapSub = mapSub.toMutableMap()
             if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
             for (i in tempMapSub.keys) {
                 Thread {
@@ -222,7 +238,7 @@ class RefreshThread : Thread() {
                                 val message = getSubscribe(tempMapSub[i]!!, flag)
                                 // 复制一份订阅人表用于发送
                                 lockSubscribeMap.lock()
-                                val map = SteamhelperPluginData.subscribeMap
+                                val map = SteamhelperPluginData.subscribeMap.toMutableMap()
                                 if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
                                 if (!map[i].isNullOrEmpty()) {
                                     // 发送订阅信息
@@ -234,7 +250,7 @@ class RefreshThread : Thread() {
                                 // 因此采用增加错误数量的方法
                                 // 复制一份订阅人表用于增加错误数量
                                 lockSubscribeMap.lock()
-                                val map = SteamhelperPluginData.subscribeMap[i]
+                                val map = SteamhelperPluginData.subscribeMap[i]?.toMutableMap()
                                 if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
                                 if (!map.isNullOrEmpty()) {
                                     for (bot in map.keys) {
@@ -262,7 +278,7 @@ class SaleJob : Job {
     @Throws(JobExecutionException::class)
     override fun execute(arg0: JobExecutionContext) {
         lockPushMap.lock()
-        val map = SteamhelperPluginData.pushMap
+        val map = SteamhelperPluginData.pushMap.toMutableMap()
         if (lockPushMap.isHeldByCurrentThread) lockPushMap.unlock()
         for (bot in map.keys) {
             for (contact in map[bot]!!.keys) {
@@ -281,8 +297,27 @@ class WeekJob : Job {
     @Throws(JobExecutionException::class)
     override fun execute(arg0: JobExecutionContext) {
         lockPushMap.lock()
-        val map = SteamhelperPluginData.pushMap
+        val map = SteamhelperPluginData.pushMap.toMutableMap()
         if (lockPushMap.isHeldByCurrentThread) lockPushMap.unlock()
+        for (bot in map.keys) {
+            for (contact in map[bot]!!.keys) {
+                GlobalScope.launch { send(bot, contact, getEpic()) }
+                // 防止发送过快风控，不会阻塞Mirai线程
+                Thread.sleep((500..2000).random().toLong())
+            }
+        }
+        Steamhelper.logger.info("Epic周免信息推送完毕")
+    }
+}
+
+/** 周榜信息推送Job */
+class EpicJob : Job {
+    @OptIn(DelicateCoroutinesApi::class)
+    @Throws(JobExecutionException::class)
+    override fun execute(arg0: JobExecutionContext) {
+        lockPushEpicMap.lock()
+        val map = SteamhelperPluginData.pushEpicMap.toMutableMap()
+        if (lockPushEpicMap.isHeldByCurrentThread) lockPushEpicMap.unlock()
         for (bot in map.keys) {
             for (contact in map[bot]!!.keys) {
                 GlobalScope.launch { send(bot, contact, getWeek()) }
@@ -309,6 +344,7 @@ class CronTrigger {
         // 调度器的对象的实例化
         val jobSale = JobBuilder.newJob(SaleJob::class.java).withIdentity("jobSale", "group1").build()
         val jobWeek = JobBuilder.newJob(WeekJob::class.java).withIdentity("jobWeek", "group1").build()
+        val jobEpic = JobBuilder.newJob(EpicJob::class.java).withIdentity("jobEpic", "group1").build()
         val jobFresh = JobBuilder.newJob(FreshJob::class.java).withIdentity("jobFresh", "group1").build()
         val triggerSale = TriggerBuilder.newTrigger().withIdentity("triggerSale", "group1").withSchedule(
             CronScheduleBuilder.cronSchedule(SteamhelperPluginSetting.timePushSale)
@@ -318,12 +354,17 @@ class CronTrigger {
             CronScheduleBuilder.cronSchedule(SteamhelperPluginSetting.timePushWeek)
                 .inTimeZone(TimeZone.getTimeZone(SteamhelperPluginSetting.timeZone))
         ).forJob(jobWeek).build()
+        val triggerEpic = TriggerBuilder.newTrigger().withIdentity("triggerEpic", "group1").withSchedule(
+            CronScheduleBuilder.cronSchedule(SteamhelperPluginSetting.timePushEpic)
+                .inTimeZone(TimeZone.getTimeZone(SteamhelperPluginSetting.timeZone))
+        ).forJob(jobEpic).build()
         val triggerFresh = TriggerBuilder.newTrigger().withIdentity("triggerFresh", "group1").withSchedule(
             CronScheduleBuilder.cronSchedule(SteamhelperPluginSetting.timeRefresh)
                 .inTimeZone(TimeZone.getTimeZone(SteamhelperPluginSetting.timeZone))
         ).forJob(jobFresh).build()
         scheduler.scheduleJob(jobSale, triggerSale)
         scheduler.scheduleJob(jobWeek, triggerWeek)
+        scheduler.scheduleJob(jobEpic, triggerEpic)
         scheduler.scheduleJob(jobFresh, triggerFresh)
         scheduler.start()
     }
