@@ -291,7 +291,7 @@ class SaleJob : Job {
     }
 }
 
-/** 周榜信息推送Job */
+/** Steam周榜信息推送Job */
 class WeekJob : Job {
     @OptIn(DelicateCoroutinesApi::class)
     @Throws(JobExecutionException::class)
@@ -301,16 +301,16 @@ class WeekJob : Job {
         if (lockPushMap.isHeldByCurrentThread) lockPushMap.unlock()
         for (bot in map.keys) {
             for (contact in map[bot]!!.keys) {
-                GlobalScope.launch { send(bot, contact, getEpic()) }
+                GlobalScope.launch { send(bot, contact, getWeek()) }
                 // 防止发送过快风控，不会阻塞Mirai线程
                 Thread.sleep((500..2000).random().toLong())
             }
         }
-        Steamhelper.logger.info("Epic周免信息推送完毕")
+        Steamhelper.logger.info("Steam周榜信息推送完毕")
     }
 }
 
-/** 周榜信息推送Job */
+/** Epic周免信息推送Job */
 class EpicJob : Job {
     @OptIn(DelicateCoroutinesApi::class)
     @Throws(JobExecutionException::class)
@@ -320,12 +320,12 @@ class EpicJob : Job {
         if (lockPushEpicMap.isHeldByCurrentThread) lockPushEpicMap.unlock()
         for (bot in map.keys) {
             for (contact in map[bot]!!.keys) {
-                GlobalScope.launch { send(bot, contact, getWeek()) }
+                GlobalScope.launch { send(bot, contact, getEpic()) }
                 // 防止发送过快风控，不会阻塞Mirai线程
                 Thread.sleep((500..2000).random().toLong())
             }
         }
-        Steamhelper.logger.info("周榜信息推送完毕")
+        Steamhelper.logger.info("Epic周免信息推送完毕")
     }
 }
 
