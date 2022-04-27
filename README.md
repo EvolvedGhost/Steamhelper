@@ -24,6 +24,16 @@
 | `com.evolvedghost.mirai.steamhelper.steamhelper:push`       | Steamhelper推送权限，可以防止有人随意开关推送 |
 | `com.evolvedghost.mirai.steamhelper.steamhelper:reload`     | Steamhelper重载权限，可以让指定用户有权限重载 |
 
+插件调用的是Mirai自带的权限管理系统，你可以在控制台输入`?`来获取帮助，通常权限的添加方式为：
+
+`/permission add <被许可人 ID> <权限 ID>    # 授权一个权限`
+
+<被许可人 ID> 可以为QQ号或者通配符`*`来代表所有用户
+
+<权限 ID> 即上述权限名称，可按照需求添加
+
+一个例子为：`/permission add 12345 com.evolvedghost.mirai.steamhelper.steamhelper:reload`，即为QQ号为12345的用户添加重载权限
+
 开启全部权限请在控制台输入：
 
 `/permission add * com.evolvedghost.mirai.steamhelper.steamhelper:*`
