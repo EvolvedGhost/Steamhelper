@@ -7,11 +7,19 @@ plugins {
 }
 
 group = "com.evolvedghost.mirai.steamhelper"
-version = "1.0.3"
+version = "1.0.4"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+        name = "ktor-eap"
+    }
+    maven {
+        url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+        name = "ktor-eap"
+    }
 }
 
 dependencies {

@@ -21,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock
 object Steamhelper : KotlinPlugin(JvmPluginDescription(
     id = "com.evolvedghost.mirai.steamhelper.steamhelper",
     name = "SteamHelper",
-    version = "1.0.3",
+    version = "1.0.4",
 ) {
     author("EvolvedGhost")
 }) {
@@ -199,6 +199,22 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
 
     @ValueDescription("Steam状态与大促情况获取源")
     val urlInfo: String by value("https://keylol.com/")
+
+    @ValueDescription(
+        """
+        网络请求模式
+        0=正常的网络连接，适用于可流畅访问Steam的网络（可能比1更安全）
+        1=忽略证书错误的网络连接，适用于使用例如Steamcommunity302的网络连接
+        2=代理的网络连接，需要在下方配置HTTP代理
+        """
+    )
+    val requestMode: Int by value(1)
+
+    @ValueDescription("HTTP代理的链接[网络请求模式2下使用]")
+    val proxyUrl: String by value("127.0.0.1")
+
+    @ValueDescription("HTTP代理的端口[网络请求模式2下使用]")
+    val proxyPort: Int by value(10809)
 
     @ValueDescription("连接超时时间，单位毫秒")
     val timeout: Int by value(3000)
