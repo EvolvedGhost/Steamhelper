@@ -80,6 +80,10 @@
 * `urlInfo` Steam状态与大促情况获取源，默认为`https://keylol.com/`
 
 ```你可以配合 Github Action 和 script/mirrorCrawler.py 为 urlWeekly urlInfo 做一个镜像源```
+* `requestMode` 
+网络请求模式，0=正常的网络连接，适用于可流畅访问Steam的网络（可能比1更安全），1=忽略证书错误的网络连接，适用于使用例如Steamcommunity302的网络连接，2=代理的网络连接，需要在下方配置HTTP代理，默认为`1`
+* `proxyUrl` HTTP代理的链接`网络请求模式2下使用`，默认为`127.0.0.1`
+* `proxyPort` HTTP代理的端口`网络请求模式2下使用`，默认为`10809`
 * `timeout` 连接超时时间，单位毫秒，默认为`3000`
 * `retry` 连接超时时间重试次数，默认为`3`
 * `errors` 推送、订阅信息发送超过指定错误次数后自动删除，成功一次后会重新计数，默认为`5`
