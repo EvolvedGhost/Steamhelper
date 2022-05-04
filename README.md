@@ -89,7 +89,7 @@
 * `retry` 连接超时时间重试次数，默认为`3`
 * `errors` 推送、订阅信息发送超过指定错误次数后自动删除，成功一次后会重新计数，默认为`5`
 * `warningLevel` 插件控制台提醒级别，-1=关闭提示，插件将完全静默不输出任何信息 ，0=一般的提示，会给出错误等可能的解决方法 ，1=在0的基础上提供Exception头
-  ，2=在0的基础上对每一次错误都输出Exception头
+  ，2=在0的基础上对每一次错误都输出Exception头，默认为`1`
 * `debug` 调试模式，会尽可能输出插件的所有Exception，默认为`false`
 * `timeFormat` 时间输出模式，格式请参阅 [此处](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html)
   ，默认为`'yyyy-MM-dd HH:mm:ss EEEE'`

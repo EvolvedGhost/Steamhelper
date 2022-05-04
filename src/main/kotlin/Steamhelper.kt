@@ -236,7 +236,7 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
         2=在0的基础上对每一次错误都输出Exception头
         """
     )
-    val warningLevel: Int by value(2)
+    val warningLevel: Int by value(1)
 
     @ValueDescription("调试模式，会输出所有错误的printStackTrace，如非对插件debug请勿打开")
     val debug: Boolean by value(false)
