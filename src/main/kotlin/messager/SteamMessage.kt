@@ -178,7 +178,9 @@ suspend fun getCompare(AppNameOrAppid: Array<out String>): String {
     var success = 0
     for (i in SteamhelperPluginSetting.areasPrice.indices) {
         if (arr[i].appPrice[0] < -1) count++
-        else {
+        else if (arr[success].appName == null) {
+            success = i
+        } else {
             success = i
             break
         }

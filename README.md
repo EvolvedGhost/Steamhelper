@@ -80,13 +80,16 @@
 * `urlInfo` Steam状态与大促情况获取源，默认为`https://keylol.com/`
 
 ```你可以配合 Github Action 和 script/mirrorCrawler.py 为 urlWeekly urlInfo 做一个镜像源```
-* `requestMode` 
-网络请求模式，0=正常的网络连接，适用于可流畅访问Steam的网络（可能比1更安全），1=忽略证书错误的网络连接，适用于使用例如Steamcommunity302的网络连接，2=代理的网络连接，需要在下方配置HTTP代理，默认为`1`
+
+* `requestMode`
+  网络请求模式，0=正常的网络连接，适用于可流畅访问Steam的网络（可能比1更安全），1=忽略证书错误的网络连接，适用于使用例如Steamcommunity302的网络连接，2=代理的网络连接，需要在下方配置HTTP代理，默认为`1`
 * `proxyUrl` HTTP代理的链接`网络请求模式2下使用`，默认为`127.0.0.1`
 * `proxyPort` HTTP代理的端口`网络请求模式2下使用`，默认为`10809`
 * `timeout` 连接超时时间，单位毫秒，默认为`3000`
 * `retry` 连接超时时间重试次数，默认为`3`
 * `errors` 推送、订阅信息发送超过指定错误次数后自动删除，成功一次后会重新计数，默认为`5`
+* `warningLevel` 插件控制台提醒级别，-1=关闭提示，插件将完全静默不输出任何信息 ，0=一般的提示，会给出错误等可能的解决方法 ，1=在0的基础上提供Exception头
+  ，2=在0的基础上对每一次错误都输出Exception头
 * `debug` 调试模式，会尽可能输出插件的所有Exception，默认为`false`
 * `timeFormat` 时间输出模式，格式请参阅 [此处](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html)
   ，默认为`'yyyy-MM-dd HH:mm:ss EEEE'`
@@ -98,8 +101,8 @@
   大促推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
   并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 12 ? * MON'`
 * `timePushEpic`
-    Epic周免推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
-    并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 12 ? * FRI'`
+  Epic周免推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
+  并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 12 ? * FRI'`
 * `timeRefresh`
   大促推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
   并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 * * * ?'`
