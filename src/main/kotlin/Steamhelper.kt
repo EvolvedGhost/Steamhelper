@@ -1,7 +1,10 @@
 package com.evolvedghost.mirai.steamhelper
 
 import com.evolvedghost.mirai.steamhelper.messager.*
-import com.evolvedghost.mirai.steamhelper.steamhelper.*
+import com.evolvedghost.mirai.steamhelper.utils.lockScheduler
+import com.evolvedghost.mirai.steamhelper.utils.pluginLogger
+import com.evolvedghost.mirai.steamhelper.utils.reloadPlugin
+import com.evolvedghost.mirai.steamhelper.utils.scheduler
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandSender
@@ -14,7 +17,6 @@ import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
-import net.mamoe.mirai.utils.info
 import java.util.concurrent.locks.ReentrantLock
 
 
@@ -49,7 +51,7 @@ object Steamhelper : KotlinPlugin(JvmPluginDescription(
         SteamhelperPluginSetting.save()
         SteamhelperCommand.register()
         reloadPlugin()
-        logger.info { "SteamHelper已就绪，数据刷新命令已经发出，会延迟于插件启动，请稍后" }
+        pluginLogger("SteamHelper已就绪，数据刷新命令已经发出，会延迟于插件启动，请稍后")
     }
 
     override fun onDisable() {
@@ -58,7 +60,7 @@ object Steamhelper : KotlinPlugin(JvmPluginDescription(
         lockScheduler.unlock()
         SteamhelperPluginData.save()
         SteamhelperCommand.unregister()
-        logger.info { "SteamHelper已关闭捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏" }
+        pluginLogger("SteamHelper已关闭捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏")
     }
 }
 
@@ -225,7 +227,18 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
     @ValueDescription("推送、订阅信息发送超过指定错误次数后自动删除，成功一次后会重新计数")
     val errors: Int by value(5)
 
-    @ValueDescription("调试模式，一般不会有人开吧")
+    @ValueDescription(
+        """
+        插件控制台提醒级别
+        -1=关闭提示，插件将完全静默不输出任何信息
+        0=一般的提示，会给出错误等可能的解决方法
+        1=在0的基础上提供Exception头
+        2=在0的基础上对每一次错误都输出Exception头
+        """
+    )
+    val warningLevel: Int by value(2)
+
+    @ValueDescription("调试模式，会输出所有错误的printStackTrace，如非对插件debug请勿打开")
     val debug: Boolean by value(false)
 
     @ValueDescription(

@@ -2,6 +2,7 @@ package com.evolvedghost.mirai.steamhelper.worker
 
 import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
 import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
+import com.evolvedghost.mirai.steamhelper.utils.pluginExceptionHandler
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -49,7 +50,7 @@ class SteamWeek {
             isInit = true
             true
         } catch (e: Exception) {
-            if (SteamhelperPluginSetting.debug) e.printStackTrace()
+            pluginExceptionHandler("Steam周促获取", e)
             exception = e.toString()
             false
         }

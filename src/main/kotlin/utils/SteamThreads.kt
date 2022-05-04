@@ -2,7 +2,7 @@
  * SteamThreads.kt
  * 储存插件后台所需的Job和线程
  */
-package com.evolvedghost.mirai.steamhelper.steamhelper
+package com.evolvedghost.mirai.steamhelper.utils
 
 import com.evolvedghost.mirai.steamhelper.*
 import com.evolvedghost.mirai.steamhelper.Steamhelper.reload
@@ -11,6 +11,7 @@ import com.evolvedghost.mirai.steamhelper.messager.getEpic
 import com.evolvedghost.mirai.steamhelper.messager.getSale
 import com.evolvedghost.mirai.steamhelper.messager.getSubscribe
 import com.evolvedghost.mirai.steamhelper.messager.getWeek
+import com.evolvedghost.mirai.steamhelper.steamhelper.area4currency
 import com.evolvedghost.mirai.steamhelper.worker.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -48,7 +49,7 @@ fun reloadPlugin() {
     try {
         SteamhelperPluginSetting.reload()
     } catch (e: Exception) {
-        if (SteamhelperPluginSetting.debug) e.printStackTrace()
+        pluginExceptionHandler("重载插件配置", e)
     }
     if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
     if (lockSteamWeek.isHeldByCurrentThread) lockSteamWeek.unlock()
@@ -64,7 +65,7 @@ fun reloadPlugin() {
         scheduler = StdSchedulerFactory().scheduler
         CronTrigger().run()
     } catch (e: Exception) {
-        if (SteamhelperPluginSetting.debug) e.printStackTrace()
+        pluginExceptionHandler("重载计划任务", e)
     }
     if (lockScheduler.isHeldByCurrentThread) lockScheduler.unlock()
 }
@@ -76,7 +77,7 @@ suspend fun send(bot: Long, contact: Long, message: String): Boolean {
         Bot.getInstance(bot).getContact(contact, true).sendMessage(message)
         true
     } catch (e: Exception) {
-        if (SteamhelperPluginSetting.debug) e.printStackTrace()
+        pluginExceptionHandler("消息发送", e)
         false
     }
 }
@@ -90,13 +91,13 @@ fun addErrors(appid: Int, bot: Long, contact: Long) {
             count++
             if (count >= SteamhelperPluginSetting.errors) {
                 SteamhelperPluginData.subscribeMap[appid]!![bot]!!.remove(contact)
-                Steamhelper.logger.info("BotID:$bot,AppID:$appid,联系人ID:$contact 已经出现" + SteamhelperPluginSetting.errors + "次报错，其订阅已被删除")
+                pluginLogger("BotID:$bot,AppID:$appid,联系人ID:$contact 已经出现" + SteamhelperPluginSetting.errors + "次报错，其订阅已被删除")
             } else {
                 SteamhelperPluginData.subscribeMap[appid]!![bot]!![contact] = count
             }
         }
     } catch (e: Exception) {
-        if (SteamhelperPluginSetting.debug) e.printStackTrace()
+        pluginExceptionHandler("错误计数", e)
     }
     if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
 }
@@ -121,7 +122,7 @@ fun sendSubscribe(appid: Int, mutableMap: MutableMap<Long, MutableMap<Long, Int>
                                 SteamhelperPluginData.subscribeMap[appid]!![bot]!![contact] = 0
                             }
                         } catch (e: Exception) {
-                            if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                            pluginExceptionHandler("错误次数清零", e)
                         }
                         if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
                     }
@@ -130,7 +131,7 @@ fun sendSubscribe(appid: Int, mutableMap: MutableMap<Long, MutableMap<Long, Int>
                 }
             } else {
                 // Bot不在线
-                Steamhelper.logger.info("BotID:$bot 获取为null，可能未上线，订阅推送失败")
+                pluginLogger("BotID:$bot 获取为null，可能未上线，订阅推送失败")
             }
         }
     }
@@ -142,22 +143,19 @@ class RefreshThread : Thread() {
         // 刷新周榜
         lockSteamWeek.lock()
         if (!steamWeek.refreshSteamWeeklyTopSellers()) {
-            Steamhelper.logger.info("Steam周榜刷新失败：")
-            Steamhelper.logger.info(steamWeek.exception)
+            pluginWarn("Steam周榜刷新失败：", steamWeek.exception)
         }
         if (lockSteamWeek.isHeldByCurrentThread) lockSteamWeek.unlock()
         // 刷新信息
         lockSteamInfo.lock()
         if (!steamInfo.refreshSteamInfo()) {
-            Steamhelper.logger.info("Steam信息刷新失败：")
-            Steamhelper.logger.info(steamInfo.exception)
+            pluginWarn("Steam信息刷新失败：", steamInfo.exception)
         }
         if (lockSteamInfo.isHeldByCurrentThread) lockSteamInfo.unlock()
         // 刷新信息
         lockEpicPromote.lock()
         if (!epicPromote.refresh()) {
-            Steamhelper.logger.info("Epic周免刷新失败：")
-            Steamhelper.logger.info(epicPromote.exception)
+            pluginWarn("Epic周免刷新失败：", epicPromote.exception)
         }
         if (lockEpicPromote.isHeldByCurrentThread) lockEpicPromote.unlock()
         // 刷新汇率信息
@@ -165,15 +163,14 @@ class RefreshThread : Thread() {
             lockExchange.lock()
             try {
                 if (!exchange.refresh(area4currency[SteamhelperPluginSetting.areasPrice[0]]!!)) {
-                    Steamhelper.logger.info("Steam汇率信息更新失败：")
-                    Steamhelper.logger.info(exchange.exception)
+                    pluginWarn("Steam汇率信息更新失败：", exchange.exception)
                 }
             } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                pluginExceptionHandler("刷新汇率", e)
             }
             if (lockExchange.isHeldByCurrentThread) lockExchange.unlock()
         } else {
-            Steamhelper.logger.info("Steam汇率信息更新失败：请检查价格区域格式是否正确")
+            pluginLogger("Steam汇率信息更新失败：请检查价格区域格式是否正确")
         }
         // 清理为空的数据储存Map
         lockSubscribeMap.lock()
@@ -192,7 +189,7 @@ class RefreshThread : Thread() {
                 }
             }
         } catch (e: Exception) {
-            if (SteamhelperPluginSetting.debug) e.printStackTrace()
+            pluginExceptionHandler("清空内存空的数据", e)
         }
         if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
         // 刷新订阅的游戏信息
@@ -215,7 +212,7 @@ class RefreshThread : Thread() {
                 mapSub = tempMapSub
             }
         } catch (e: Exception) {
-            if (SteamhelperPluginSetting.debug) e.printStackTrace()
+            pluginExceptionHandler("验证内存储存游戏信息", e)
         }
         if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
         if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
@@ -265,10 +262,10 @@ class RefreshThread : Thread() {
                 }.start()
             }
         } else {
-            Steamhelper.logger.info("Steam订阅刷新失败：请检查价格区域格式是否正确")
+            pluginLogger("Steam订阅刷新失败：请检查价格区域格式是否正确")
         }
         SteamhelperPluginData.save()
-        Steamhelper.logger.info("信息刷新线程执行完毕")
+        pluginLogger("信息刷新线程执行完毕")
     }
 }
 
@@ -287,7 +284,7 @@ class SaleJob : Job {
                 Thread.sleep((500..2000).random().toLong())
             }
         }
-        Steamhelper.logger.info("大促信息推送完毕")
+        pluginLogger("大促信息推送完毕")
     }
 }
 
@@ -306,7 +303,7 @@ class WeekJob : Job {
                 Thread.sleep((500..2000).random().toLong())
             }
         }
-        Steamhelper.logger.info("Steam周榜信息推送完毕")
+        pluginLogger("Steam周榜信息推送完毕")
     }
 }
 
@@ -325,7 +322,7 @@ class EpicJob : Job {
                 Thread.sleep((500..2000).random().toLong())
             }
         }
-        Steamhelper.logger.info("Epic周免信息推送完毕")
+        pluginLogger("Epic周免信息推送完毕")
     }
 }
 

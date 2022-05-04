@@ -5,12 +5,15 @@
 
 package com.evolvedghost.mirai.steamhelper.messager
 
-import com.evolvedghost.mirai.steamhelper.*
+import com.evolvedghost.mirai.steamhelper.SteamhelperPluginData
+import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
+import com.evolvedghost.mirai.steamhelper.lockPushMap
+import com.evolvedghost.mirai.steamhelper.lockSubscribeMap
 import com.evolvedghost.mirai.steamhelper.messager.handler.getFormattedTime
 import com.evolvedghost.mirai.steamhelper.messager.handler.replace
 import com.evolvedghost.mirai.steamhelper.messager.handler.setPush
 import com.evolvedghost.mirai.steamhelper.messager.handler.setSearch
-import com.evolvedghost.mirai.steamhelper.steamhelper.*
+import com.evolvedghost.mirai.steamhelper.utils.*
 import com.evolvedghost.mirai.steamhelper.worker.SteamApp
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
@@ -18,7 +21,6 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ContactUtils.getContact
-import net.mamoe.mirai.utils.info
 
 /**
  * 计算两个数的比例
@@ -109,7 +111,7 @@ fun getSale(): String {
         // 处理messageSale
         replace(
             SteamhelperPluginSetting.messageSale, keywordsSale, arrayOf(
-                saleTitle, diffTime, getFormattedTime(saleTimestamp),saleTimestamp.toString()
+                saleTitle, diffTime, getFormattedTime(saleTimestamp), saleTimestamp.toString()
             )
         )
     } else {
@@ -138,8 +140,7 @@ suspend fun getCompare(AppNameOrAppid: Array<out String>): String {
             return "未找到相应的App"
         }
         else -> {
-            Steamhelper.logger.info { "SteamHelper在搜索的时候得到了一个错误：" }
-            Steamhelper.logger.info { search.exception }
+            pluginWarn("SteamHelper在搜索的时候得到了一个错误：", search.exception)
             return "搜索发生错误，如长期出现此信息请检查日志和机器人网络状况"
         }
     }
@@ -298,8 +299,8 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
                     // 进行一次试发送，如失败则不允许订阅
                     contact.sendMessage("订阅中……")
                 } catch (e: Exception) {
-                    if (SteamhelperPluginSetting.debug) e.printStackTrace()
-                    cs.sendMessage("订阅失败，机器人无法给您发送信息，错误原因：\n$e")
+                    pluginExceptionHandler("订阅", e)
+                    pluginWarn("订阅失败，机器人无法给您发送信息：", e.toString())
                 }
             }
             val appid: Int
@@ -320,8 +321,7 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
                         return
                     }
                     else -> {
-                        Steamhelper.logger.info { "SteamHelper在搜索的时候得到了一个错误：" }
-                        Steamhelper.logger.info { search.exception }
+                        pluginWarn("SteamHelper在搜索的时候得到了一个错误：", search.exception)
                         cs.sendMessage("搜索发生错误，如长期出现此信息请检查日志和机器人网络状况")
                         return
                     }
@@ -361,7 +361,8 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
                         return
                     }
                 } catch (e: Exception) {
-                    if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                    pluginExceptionHandler("订阅添加", e)
+                    pluginWarn("订阅失败，添加记录时出现了一个问题：", e.toString())
                 }
                 if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
                 cs.sendMessage(search.appName + '(' + search.appid + ')' + "订阅成功")
@@ -376,7 +377,8 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
                         cs.sendMessage(search.appName + '(' + search.appid + ")您没有订阅此游戏")
                     }
                 } catch (e: Exception) {
-                    if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                    pluginExceptionHandler("订阅取消", e)
+                    pluginWarn("取消订阅失败，清理记录时出现了一个问题：", e.toString())
                 }
                 if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
             }
@@ -410,7 +412,8 @@ suspend fun getAllSubscribe(flag: Boolean, cs: CommandSender) {
                 }
             }
         } catch (e: Exception) {
-            if (SteamhelperPluginSetting.debug) e.printStackTrace()
+            pluginExceptionHandler("全部订阅", e)
+            pluginWarn("取消/查看全部订阅失败，操作记录时出现了一个问题：", e.toString())
         }
         if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
         if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
@@ -438,8 +441,7 @@ fun getSearch(AppNameOrAppid: Array<out String>): String {
             return "未找到相应的App"
         }
         else -> {
-            Steamhelper.logger.info { "SteamHelper在搜索的时候得到了一个错误：" }
-            Steamhelper.logger.info { search.exception }
+            pluginWarn("SteamHelper在搜索的时候得到了一个错误：", search.exception)
             return "搜索发生错误，如长期出现此信息请检查日志和机器人网络状况"
         }
     }

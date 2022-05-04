@@ -1,7 +1,7 @@
 package com.evolvedghost.mirai.steamhelper.worker
 
-import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
 import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
+import com.evolvedghost.mirai.steamhelper.utils.pluginExceptionHandler
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 
@@ -37,7 +37,7 @@ class Exchange {
                 mapArea = area
                 true
             } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                pluginExceptionHandler("汇率获取", e)
                 exception = e.toString()
                 false
             }

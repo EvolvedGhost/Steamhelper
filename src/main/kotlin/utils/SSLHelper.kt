@@ -22,7 +22,7 @@ class SSLHelper {
             try {
                 return request(url).get()
             } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                pluginExceptionHandler("网络获取Doc", e)
                 if (i == SteamhelperPluginSetting.retry) throw e
             }
         }
@@ -34,7 +34,7 @@ class SSLHelper {
             try {
                 return request(url).ignoreContentType(true).execute().body()
             } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                pluginExceptionHandler("网络获取Body", e)
                 if (i == SteamhelperPluginSetting.retry) throw e
             }
         }
@@ -70,7 +70,7 @@ class SSLHelper {
                 ssl.init(null, trustAllCerts, SecureRandom())
                 ssl.socketFactory
             } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                pluginExceptionHandler("忽略证书验证", e)
                 throw e
             }
         }

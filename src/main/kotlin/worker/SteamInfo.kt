@@ -2,6 +2,7 @@ package com.evolvedghost.mirai.steamhelper.worker
 
 import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
 import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
+import com.evolvedghost.mirai.steamhelper.utils.pluginExceptionHandler
 import java.text.SimpleDateFormat
 
 /**
@@ -13,8 +14,8 @@ class SteamInfo {
     /** Steam状态与大促情况获取源 */
     var url = SteamhelperPluginSetting.urlInfo
 
-    /** 上次报错的原因，需要检查是否为null */
-    var exception: String? = null
+    /** 上次报错的原因 */
+    var exception = String()
 
     /** Steam商店状态，需要检查是否为null */
     var statusStore: String? = null
@@ -62,7 +63,7 @@ class SteamInfo {
             isInit = true
             true
         } catch (e: Exception) {
-            if (SteamhelperPluginSetting.debug) e.printStackTrace()
+            pluginExceptionHandler("Steam大促获取", e)
             exception = e.toString()
             false
         }

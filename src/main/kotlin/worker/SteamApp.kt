@@ -1,8 +1,8 @@
 package com.evolvedghost.mirai.steamhelper.worker
 
-import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
 import com.evolvedghost.mirai.steamhelper.steamhelper.area4currency
 import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
+import com.evolvedghost.mirai.steamhelper.utils.pluginExceptionHandler
 import com.google.gson.JsonParser
 import java.net.URLEncoder
 
@@ -10,8 +10,8 @@ import java.net.URLEncoder
  * SteamApp相关操作
  */
 class SteamApp() {
-    /** 上次报错的原因，需要检查是否为null */
-    var exception: String? = null
+    /** 上次报错的原因 */
+    var exception = String()
 
     /** SteamAppid，需要检查是否为null */
     var appid: String? = null
@@ -68,7 +68,7 @@ class SteamApp() {
                     return 1
                 }
             } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                pluginExceptionHandler("Steam应用搜索", e)
                 exception += e.toString() + "\n"
                 counter++
             }
@@ -98,7 +98,7 @@ class SteamApp() {
                         continue
                     }
                 } catch (e: Exception) {
-                    if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                    pluginExceptionHandler("Steam应用获取", e)
                     exception += e.toString() + "\n"
                     counter++
                 }
@@ -142,7 +142,7 @@ class SteamApp() {
                     return -1
                 }
             } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                pluginExceptionHandler("Steam应用获取", e)
                 exception += e.toString() + "\n"
                 appCurrency = area4currency[area]
                 appPrice = arrayOf(-2, -2, -2)

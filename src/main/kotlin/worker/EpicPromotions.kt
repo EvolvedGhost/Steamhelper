@@ -5,8 +5,8 @@
 
 package com.evolvedghost.mirai.steamhelper.worker
 
-import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
 import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
+import com.evolvedghost.mirai.steamhelper.utils.pluginExceptionHandler
 import com.google.gson.JsonParser
 import java.time.Instant
 
@@ -73,7 +73,7 @@ class EpicPromotions {
             }
             return true
         } catch (e: Exception) {
-            if (SteamhelperPluginSetting.debug) e.printStackTrace()
+            pluginExceptionHandler("Epic促销", e)
             exception = e.toString()
             return false
         }

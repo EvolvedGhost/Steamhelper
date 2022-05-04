@@ -11,8 +11,8 @@ import com.evolvedghost.mirai.steamhelper.lockPushEpicMap
 import com.evolvedghost.mirai.steamhelper.messager.handler.getFormattedTime
 import com.evolvedghost.mirai.steamhelper.messager.handler.replace
 import com.evolvedghost.mirai.steamhelper.messager.handler.setPush
-import com.evolvedghost.mirai.steamhelper.steamhelper.epicPromote
-import com.evolvedghost.mirai.steamhelper.steamhelper.lockEpicPromote
+import com.evolvedghost.mirai.steamhelper.utils.epicPromote
+import com.evolvedghost.mirai.steamhelper.utils.lockEpicPromote
 import net.mamoe.mirai.console.command.CommandSender
 
 /** Epic周免替换关键字 */

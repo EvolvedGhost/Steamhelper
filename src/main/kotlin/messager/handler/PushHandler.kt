@@ -5,7 +5,8 @@
 
 package com.evolvedghost.mirai.steamhelper.messager.handler
 
-import com.evolvedghost.mirai.steamhelper.SteamhelperPluginSetting
+import com.evolvedghost.mirai.steamhelper.utils.pluginExceptionHandler
+import com.evolvedghost.mirai.steamhelper.utils.pluginWarn
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -36,13 +37,14 @@ suspend fun setPush(
                     return
                 }
             } catch (e: Exception) {
-                if (SteamhelperPluginSetting.debug) e.printStackTrace()
+                pluginExceptionHandler("推送", e)
+                pluginWarn("开启/关闭推送失败，操作记录时出现了一个问题：", e.toString())
             }
             if (locker.isHeldByCurrentThread) locker.unlock()
             cs.sendMessage("您的" + message + "推送已开启")
         } catch (e: Exception) {
-            if (SteamhelperPluginSetting.debug) e.printStackTrace()
-            cs.sendMessage("操作" + message + "推送失败，机器人无法给您发送信息，错误原因：\n$e")
+            pluginExceptionHandler("推送", e)
+            pluginWarn("开启/关闭推送失败，机器人无法给您发送信息：", e.toString())
         }
     } else {
         cs.sendMessage("暂不支持该渠道" + message + "推送操作")
