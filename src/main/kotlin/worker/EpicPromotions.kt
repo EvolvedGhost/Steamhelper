@@ -7,6 +7,7 @@ package com.evolvedghost.mirai.steamhelper.worker
 
 import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
 import com.evolvedghost.mirai.steamhelper.utils.pluginExceptionHandler
+import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import java.time.Instant
 
@@ -32,6 +33,20 @@ class EpicPromotions {
     /** 错误信息 */
     var exception = String()
 
+    /** 添加限免名单 */
+    private fun addElement(element: JsonElement, startTime: Long, isToCurrent: Boolean) {
+        val newPromotion = EpicGame(
+            element.asJsonObject["title"].asString,
+            element.asJsonObject["description"].asString,
+            startTime
+        )
+        if (isToCurrent) {
+            current.add(newPromotion)
+        } else {
+            future.add(newPromotion)
+        }
+    }
+
     /**
      * 刷新Epic限免项目
      * @return Boolean 是否成功
@@ -50,23 +65,29 @@ class EpicPromotions {
                 if (kotlin.math.abs(elementDate - nowDate) < 604800) {
                     // 判断是否在限免中（避免周年庆每天一个的情况）
                     if (element.asJsonObject["price"].asJsonObject["totalPrice"].asJsonObject["discountPrice"].asInt == 0) {
-                        current.add(
-                            EpicGame(
-                                element.asJsonObject["title"].asString,
-                                element.asJsonObject["description"].asString,
-                                elementDate
-                            )
-                        )
+                        addElement(element, elementDate, true)
                     } else {
                         // 判断是否是未来限免
                         if (elementDate > nowDate) {
-                            future.add(
-                                EpicGame(
-                                    element.asJsonObject["title"].asString,
-                                    element.asJsonObject["description"].asString,
-                                    elementDate
-                                )
-                            )
+                            addElement(element, elementDate, false)
+                        }
+                    }
+                } else if (elementDate > 4000000000) {
+                    // 特殊限免活动时，API会将其放置到最后
+                    var promotionalOffers = element.asJsonObject["promotions"].asJsonObject.get("promotionalOffers")
+                    if (promotionalOffers.asJsonArray.isEmpty) {
+                        promotionalOffers =
+                            element.asJsonObject["promotions"].asJsonObject.get("upcomingPromotionalOffers")
+                    }
+                    if (!promotionalOffers.asJsonArray.isEmpty) {
+                        promotionalOffers =
+                            promotionalOffers.asJsonArray[0].asJsonObject["promotionalOffers"].asJsonArray[0]
+                        val startDate = Instant.parse(promotionalOffers.asJsonObject["startDate"].asString).epochSecond
+                        val endDate = Instant.parse(promotionalOffers.asJsonObject["endDate"].asString).epochSecond
+                        if (nowDate in startDate..endDate) {
+                            addElement(element, startDate, true)
+                        } else if (nowDate < startDate) {
+                            addElement(element, startDate, false)
                         }
                     }
                 }
