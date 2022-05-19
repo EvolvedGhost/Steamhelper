@@ -18,7 +18,7 @@ import java.time.Instant
  * @property effectiveDate Long 生效日期时间戳
  * @constructor
  */
-class EpicGame(var title: String, var description: String, var effectiveDate: Long)
+class EpicGame(var title: String, var description: String, var link: String, var effectiveDate: Long)
 
 /**
  * Epic限免类
@@ -35,9 +35,13 @@ class EpicPromotions {
 
     /** 添加限免名单 */
     private fun addElement(element: JsonElement, startTime: Long, isToCurrent: Boolean) {
+        val mappings = element.asJsonObject["productSlug"].asString
+        val link = if (mappings == "[]") "未知"
+        else "https://store.epicgames.com/p/$mappings"
         val newPromotion = EpicGame(
             element.asJsonObject["title"].asString,
             element.asJsonObject["description"].asString,
+            link,
             startTime
         )
         if (isToCurrent) {

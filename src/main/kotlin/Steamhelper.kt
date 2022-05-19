@@ -449,6 +449,7 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
         换行请使用\n，其他特殊字符同理，每项都会默认带换行
         <nm>=App名称
         <ds>=App介绍
+        <lk>=App链接（如果为神秘游戏会输出未知）
         <tf>=开始时间（以timeFormat格式）
         <ts>=开始时间（以时间戳的格式）
         """

@@ -19,7 +19,7 @@ import net.mamoe.mirai.console.command.CommandSender
 val keywordsEpicPromote = arrayOf("<cls>", "<fls>")
 
 /** Epic周免榜单替换关键字 */
-val keywordsEpicPromoteList = arrayOf("<nm>", "<ds>", "<tf>", "<ts>")
+val keywordsEpicPromoteList = arrayOf("<nm>", "<ds>", "<lk>", "<tf>", "<ts>")
 
 /** 获取Epic周免信息 */
 fun getEpic(): String {
@@ -37,6 +37,7 @@ fun getEpic(): String {
                     SteamhelperPluginSetting.messageEpicPromoteList, keywordsEpicPromoteList, arrayOf(
                         element.title,
                         element.description,
+                        element.link,
                         getFormattedTime(element.effectiveDate * 1000),
                         element.effectiveDate.toString()
                     )
@@ -51,6 +52,7 @@ fun getEpic(): String {
                         SteamhelperPluginSetting.messageEpicPromoteList, keywordsEpicPromoteList, arrayOf(
                             element.title,
                             element.description,
+                            element.link,
                             getFormattedTime(element.effectiveDate * 1000),
                             element.effectiveDate.toString()
                         )
