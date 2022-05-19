@@ -72,6 +72,16 @@
 
 位于 `Mirai-Console` 运行目录下的 `config/com.evolvedghost.mirai.steamhelper.steamhelper` 文件夹下
 
+本插件提供了相当丰富的可自定义功能，当然你也可以直接以默认模式运行并获取不错的使用体验。
+
+### 设置前请注意
+
+1. 请您严格按照格式进行更改，否则插件有无法运行的可能性
+2. 插件设置存在大量Cron设置，如需要更改请先学习Quartz
+   Cron，格式请参阅 [Quartz官方文档](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
+   并在 [Cron测试工具](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入
+3. 大多数指令支持转义字符，但是插件生成部分配置文件时字符是以`'内容'`单引号的形式生成，此种信息不允许使用转义字符，你可以手动改为`"内容\n"`即可成功输出换行
+
 ### Steamhelper.yml
 
 #### 常规设置：
@@ -233,6 +243,7 @@
 > 换行请使用\n，其他特殊字符同理  
 > &lt;nm&gt;=App名称
 > &lt;ds&gt;=App介绍
+> &lt;lk&gt;=App链接（如为神秘游戏输出为未知）
 > &lt;tf&gt;=开始时间（以timeFormat格式）
 > &lt;ts&gt;=开始时间（以时间戳的格式）
 > 默认为`"<nm>[开始于：<tf>]"`
