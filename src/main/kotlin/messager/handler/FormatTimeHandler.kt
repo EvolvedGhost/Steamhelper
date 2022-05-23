@@ -13,7 +13,7 @@ fun getFormattedTime(timestamp: Long?): String {
     return if (timestamp == null) "错误"
     else if (timestamp < 0) "已结束"
     else {
-        val dateFormat = SimpleDateFormat(SteamhelperPluginSetting.timeFormat)
+        val dateFormat = SimpleDateFormat(SteamhelperPluginSetting.timeFormat, Locale(SteamhelperPluginSetting.timeLanguage))
         dateFormat.timeZone = TimeZone.getTimeZone(SteamhelperPluginSetting.timeZone)
         dateFormat.format(timestamp)
     }

@@ -70,6 +70,14 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
 
     @ValueDescription(
         """
+        时间输出语言，采用ISO639格式
+        默认为：中文
+        """
+    )
+    val timeLanguage: String by value("zh")
+
+    @ValueDescription(
+        """
         大促推送时间，采用Quartz Cron表达式
         可以参考https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html
         或者 https://tool.lu/crontab/ 选择类型为Java(Quartz)
