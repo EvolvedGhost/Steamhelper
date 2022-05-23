@@ -25,5 +25,7 @@ repositories {
 dependencies {
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("org.quartz-scheduler:quartz:2.3.2")
+    implementation("org.quartz-scheduler:quartz:2.3.2") {
+        exclude(group = "org.slf4j")
+    }
 }

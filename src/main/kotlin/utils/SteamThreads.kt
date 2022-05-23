@@ -62,7 +62,11 @@ fun reloadPlugin() {
         if (scheduler.isStarted) {
             scheduler.shutdown()
         }
-        scheduler = StdSchedulerFactory().scheduler
+        // 防止与其他使用Quartz的插件冲突，同样其他使用Quartz的插件也需要配置自己的Properties
+        val p = Properties()
+        p.setProperty("org.quartz.scheduler.instanceName", "EvolvedGhostMiraiSteamhelperScheduler")
+        p.setProperty("org.quartz.threadPool.threadCount", "4")
+        scheduler = StdSchedulerFactory(p).scheduler
         CronTrigger().run()
     } catch (e: Exception) {
         pluginExceptionHandler("重载计划任务", e)
