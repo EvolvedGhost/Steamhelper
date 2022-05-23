@@ -22,6 +22,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ContactUtils.getContact
 import org.quartz.*
 import org.quartz.impl.StdSchedulerFactory
+import java.io.FileOutputStream
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
@@ -63,10 +64,27 @@ fun reloadPlugin() {
             scheduler.shutdown()
         }
         // 防止与其他使用Quartz的插件冲突，同样其他使用Quartz的插件也需要配置自己的Properties
+        val file = Steamhelper.configFolder.resolve("quartz.properties")
         val p = Properties()
         p.setProperty("org.quartz.scheduler.instanceName", "EvolvedGhostMiraiSteamhelperScheduler")
         p.setProperty("org.quartz.threadPool.threadCount", "4")
-        scheduler = StdSchedulerFactory(p).scheduler
+        if (!file.exists()) {
+            try {
+                val fos = FileOutputStream(file)
+                p.store(fos, null)
+                fos.close()
+            } catch (e: Exception) {
+                pluginExceptionHandler("properties写入", e)
+            }
+            scheduler = StdSchedulerFactory(p).scheduler
+        } else {
+            scheduler = try {
+                StdSchedulerFactory(file.path).scheduler
+            } catch (e: Exception) {
+                pluginExceptionHandler("properties读取", e)
+                StdSchedulerFactory(p).scheduler
+            }
+        }
         CronTrigger().run()
     } catch (e: Exception) {
         pluginExceptionHandler("重载计划任务", e)
