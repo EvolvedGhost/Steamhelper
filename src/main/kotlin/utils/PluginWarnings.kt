@@ -23,7 +23,7 @@ fun pluginWarn(info: String, e: String) {
 }
 
 fun pluginLogger(info: String) {
-    if (SteamhelperPluginSetting.warningLevel != 1) {
+    if (SteamhelperPluginSetting.warningLevel != -1) {
         Steamhelper.logger.info { info }
     }
 }
