@@ -79,7 +79,7 @@
 1. 请您严格按照格式进行更改，否则插件有无法运行的可能性
 2. 插件设置存在大量Cron设置，如需要更改请先学习Quartz
    Cron，格式请参阅 [Quartz官方文档](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
-   并在 [Cron测试工具](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入
+   并在 [Cron测试工具](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，你也可以在 [这里](https://qqe2.com/cron) 快速生成Cron
 3. 大多数指令支持转义字符，但是插件生成部分配置文件时字符是以`'内容'`单引号的形式生成，此种信息不允许使用转义字符，你可以手动改为`"内容\n"`即可成功输出换行
 
 ### Steamhelper.yml
@@ -106,16 +106,16 @@
 * `timeZone` 时间输出时区，默认为`'GMT+8:00'`
 * `timePushSale`
   大促推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
-  并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 8,20 * * ?'`
+  你可以在 [这里](https://qqe2.com/cron) 快速生成Cron，默认为`'0 0 8,20 * * ?'`
 * `timePushWeek`
   大促推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
-  并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 12 ? * MON'`
+  你可以在 [这里](https://qqe2.com/cron) 快速生成Cron，默认为`'0 0 12 ? * MON'`
 * `timePushEpic`
   Epic周免推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
-  并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 12 ? * FRI'`
+  你可以在 [这里](https://qqe2.com/cron) 快速生成Cron，默认为`'0 0 12 ? * FRI'`
 * `timeRefresh`
   大促推送时间，格式请参阅 [此处](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
-  并在 [这里](https://tool.lu/crontab/) 选择Java(Quartz)测试无误后再填入，默认为`'0 0 * * * ?'`
+  你可以在 [这里](https://qqe2.com/cron) 快速生成Cron，默认为`'0 0 * * * ?'`
 * `areasSearch` 搜索区域设定，插件将从第一个区域依次搜索所有的区域的数据直到有个正确的返回，最慢速度理论为`超时重试次数`×`连接超时时间`×`areasSearch数量`
   ，部分区域代码已在 [此处](https://github.com/EvolvedGhost/Steamhelper/blob/master/docs/area.md)
   标明，默认为
@@ -257,6 +257,10 @@ Windows：`./gradlew.bat buildPlugin`
 Linux：`./gradlew buildPlugin`
 
 编译好的jar文件可以在`/build/mirai`下找到
+
+## 已知问题
+
+插件推送采用Quartz，如您采用的多个插件均使用Quartz，请务必保证每个插件都拥有自己单独配置的properties文件，以免发生某一插件无法正常推送的冲突
 
 ## 特别感谢
 
