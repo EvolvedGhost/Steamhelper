@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock
 object Steamhelper : KotlinPlugin(JvmPluginDescription(
     id = "com.evolvedghost.mirai.steamhelper.steamhelper",
     name = "SteamHelper",
-    version = "1.0.6",
+    version = "1.0.7",
 ) {
     author("EvolvedGhost")
 }) {
