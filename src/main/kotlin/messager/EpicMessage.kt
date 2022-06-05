@@ -13,6 +13,8 @@ import com.evolvedghost.mirai.steamhelper.messager.handler.replace
 import com.evolvedghost.mirai.steamhelper.messager.handler.setPush
 import com.evolvedghost.mirai.steamhelper.utils.epicPromote
 import com.evolvedghost.mirai.steamhelper.utils.lockEpicPromote
+import com.evolvedghost.mirai.steamhelper.worker.EpicGame
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.console.command.CommandSender
 
 /** Epic周免替换关键字 */
@@ -22,13 +24,15 @@ val keywordsEpicPromote = arrayOf("<cls>", "<fls>")
 val keywordsEpicPromoteList = arrayOf("<nm>", "<ds>", "<lk>", "<tf>", "<ts>")
 
 /** 获取Epic周免信息 */
-fun getEpic(): String {
+suspend fun getEpic(): String {
     return if (epicPromote.current.isNotEmpty()) {
         // 复制epicPromote
-        lockEpicPromote.lock()
-        val current = epicPromote.current.toMutableList()
-        val future = epicPromote.future.toMutableList()
-        if (lockEpicPromote.isHeldByCurrentThread) lockEpicPromote.unlock()
+        var current: MutableList<EpicGame>
+        var future: MutableList<EpicGame>
+        lockEpicPromote.withLock {
+            current = epicPromote.current.toMutableList()
+            future = epicPromote.future.toMutableList()
+        }
         // 处理messageEpicPromoteList
         val currentSB = StringBuilder()
         for (element in current) {

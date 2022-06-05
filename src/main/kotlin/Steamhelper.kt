@@ -4,6 +4,11 @@ import com.evolvedghost.mirai.steamhelper.utils.lockScheduler
 import com.evolvedghost.mirai.steamhelper.utils.pluginLogger
 import com.evolvedghost.mirai.steamhelper.utils.reloadPlugin
 import com.evolvedghost.mirai.steamhelper.utils.scheduler
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.data.AutoSavePluginData
@@ -11,7 +16,6 @@ import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
-import java.util.concurrent.locks.ReentrantLock
 
 
 object Steamhelper : KotlinPlugin(JvmPluginDescription(
@@ -31,36 +35,44 @@ object Steamhelper : KotlinPlugin(JvmPluginDescription(
         PermissionService.INSTANCE.register(permissionId("reload"), "重载权限")
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onEnable() {
-        lockSubscribeMap.lock()
-        lockPushMap.lock()
-        SteamhelperPluginData.reload()
-        lockPushMap.unlock()
-        lockSubscribeMap.unlock()
-        SteamhelperPluginData.save()
-        PERMISSION_EXECUTE_PUSH
-        PERMISSION_EXECUTE_SUB
-        PERMISSION_EXECUTE_RELOAD
-        SteamhelperPluginSetting.reload()
-        SteamhelperPluginSetting.save()
-        SteamhelperCommand.register()
-        reloadPlugin()
-        pluginLogger("SteamHelper已就绪，数据刷新命令已经发出，会延迟于插件启动，请稍后")
+        GlobalScope.launch {
+            lockSubscribeMap.withLock {
+                lockPushMap.withLock {
+                    lockPushEpicMap.withLock {
+                        SteamhelperPluginData.reload()
+                    }
+                }
+            }
+            SteamhelperPluginData.save()
+            PERMISSION_EXECUTE_PUSH
+            PERMISSION_EXECUTE_SUB
+            PERMISSION_EXECUTE_RELOAD
+            SteamhelperPluginSetting.reload()
+            SteamhelperPluginSetting.save()
+            SteamhelperCommand.register()
+            reloadPlugin()
+            pluginLogger("SteamHelper已就绪，数据刷新命令已经发出，会延迟于插件启动，请稍后")
+        }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onDisable() {
-        lockScheduler.lock()
-        scheduler.shutdown()
-        lockScheduler.unlock()
-        SteamhelperPluginData.save()
-        SteamhelperCommand.unregister()
-        pluginLogger("SteamHelper已关闭捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏")
+        GlobalScope.launch {
+            lockScheduler.withLock {
+                scheduler.shutdown()
+            }
+            SteamhelperPluginData.save()
+            SteamhelperCommand.unregister()
+            pluginLogger("SteamHelper已关闭捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏捏")
+        }
     }
 }
 
-val lockSubscribeMap = ReentrantLock()
-val lockPushMap = ReentrantLock()
-val lockPushEpicMap = ReentrantLock()
+val lockSubscribeMap = Mutex()
+val lockPushMap = Mutex()
+val lockPushEpicMap = Mutex()
 
 object SteamhelperPluginData : AutoSavePluginData("Steamhelper") { // "name" 是保存的文件名 (不带后缀)
     /**

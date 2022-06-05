@@ -16,6 +16,7 @@ import com.evolvedghost.mirai.steamhelper.messager.handler.setSearch
 import com.evolvedghost.mirai.steamhelper.utils.*
 import com.evolvedghost.mirai.steamhelper.worker.SteamApp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.ConsoleCommandSender
@@ -45,15 +46,19 @@ val keywordsWeek = arrayOf("<tf>", "<ts>", "<ls>", "<sc>")
 val keywordsWeekList = arrayOf("<nm>", "<lk>")
 
 /** 获取周榜 */
-fun getWeek(): String {
+suspend fun getWeek(): String {
     return if (steamWeek.isInit) {
         // 复制steamWeek
-        lockSteamWeek.lock()
-        val titleArr = steamWeek.titleArr.clone()
-        val linkArr = steamWeek.linkArr.clone()
-        val timestamp = steamWeek.timestamp
-        val url = steamWeek.url
-        if (lockSteamWeek.isHeldByCurrentThread) lockSteamWeek.unlock()
+        var titleArr: Array<String?>
+        var linkArr: Array<String?>
+        var timestamp: Long?
+        var url: String
+        lockSteamWeek.withLock {
+            titleArr = steamWeek.titleArr.clone()
+            linkArr = steamWeek.linkArr.clone()
+            timestamp = steamWeek.timestamp
+            url = steamWeek.url
+        }
         // 处理messageWeekList
         val messageList = StringBuilder()
         for (i in titleArr.indices) {
@@ -80,13 +85,15 @@ fun getWeek(): String {
 val keywordsStat = arrayOf("<ss>", "<sc>")
 
 /** 获取状态 */
-fun getStat(): String {
+suspend fun getStat(): String {
     return if (steamInfo.isInit) {
         // 复制steamInfo
-        lockSteamInfo.lock()
-        val statusStore = steamInfo.statusStore
-        val statusCommunity = steamInfo.statusCommunity
-        if (lockSteamInfo.isHeldByCurrentThread) lockSteamInfo.unlock()
+        var statusStore: String?
+        var statusCommunity: String?
+        lockSteamInfo.withLock {
+            statusStore = steamInfo.statusStore
+            statusCommunity = steamInfo.statusCommunity
+        }
         // 处理messageStatus
         replace(
             SteamhelperPluginSetting.messageStatus, keywordsStat, arrayOf(statusStore, statusCommunity)
@@ -100,14 +107,17 @@ fun getStat(): String {
 val keywordsSale = arrayOf("<nm>", "<tl>", "<tf>", "<ts>")
 
 /** 获取促销 */
-fun getSale(): String {
+suspend fun getSale(): String {
     return if (steamInfo.isInit) {
         // 复制steamInfo
-        lockSteamInfo.lock()
-        val saleTitle = steamInfo.saleTitle
-        val diffTime = steamInfo.getSteamSaleDiffTime()
-        val saleTimestamp = steamInfo.saleTimestamp
-        if (lockSteamInfo.isHeldByCurrentThread) lockSteamInfo.unlock()
+        var saleTitle: String?
+        var diffTime: String?
+        var saleTimestamp: Long?
+        lockSteamInfo.withLock {
+            saleTitle = steamInfo.saleTitle
+            diffTime = steamInfo.getSteamSaleDiffTime()
+            saleTimestamp = steamInfo.saleTimestamp
+        }
         // 处理messageSale
         replace(
             SteamhelperPluginSetting.messageSale, keywordsSale, arrayOf(
@@ -343,46 +353,45 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
                     return
                 }
                 // 如果库中无此游戏则添加
-                lockSubscribeMap.lock()
-                lockMapSub.lock()
-                if (!mapSub.contains(appid)) {
-                    mapSub[appid] = search
-                }
-                if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
-                // 对subscribeMap中进行添加
-                try {
-                    if (!SteamhelperPluginData.subscribeMap.contains(appid)) {
-                        SteamhelperPluginData.subscribeMap[appid] = mutableMapOf(botID to mutableMapOf(contactID to 0))
-                    } else if (!SteamhelperPluginData.subscribeMap[appid]!!.contains(botID)) {
-                        SteamhelperPluginData.subscribeMap[appid]!![botID] = mutableMapOf(contactID to 0)
-                    } else if (!SteamhelperPluginData.subscribeMap[appid]!![botID]!!.contains(contactID)) {
-                        SteamhelperPluginData.subscribeMap[appid]!![botID]!![contactID] = 0
-                    } else {
-                        if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
-                        cs.sendMessage(search.appName + '(' + search.appid + ")您已订阅此游戏")
-                        return
+                lockSubscribeMap.withLock {
+                    lockMapSub.withLock {
+                        if (!mapSub.contains(appid)) {
+                            mapSub[appid] = search
+                        }
                     }
-                } catch (e: Exception) {
-                    pluginExceptionHandler("订阅添加", e)
-                    pluginWarn("订阅失败，添加记录时出现了一个问题：", e.toString())
+                    // 对subscribeMap中进行添加
+                    try {
+                        if (!SteamhelperPluginData.subscribeMap.contains(appid)) {
+                            SteamhelperPluginData.subscribeMap[appid] = mutableMapOf(botID to mutableMapOf(contactID to 0))
+                        } else if (!SteamhelperPluginData.subscribeMap[appid]!!.contains(botID)) {
+                            SteamhelperPluginData.subscribeMap[appid]!![botID] = mutableMapOf(contactID to 0)
+                        } else if (!SteamhelperPluginData.subscribeMap[appid]!![botID]!!.contains(contactID)) {
+                            SteamhelperPluginData.subscribeMap[appid]!![botID]!![contactID] = 0
+                        } else {
+                            cs.sendMessage(search.appName + '(' + search.appid + ")您已订阅此游戏")
+                            return
+                        }
+                    } catch (e: Exception) {
+                        pluginExceptionHandler("订阅添加", e)
+                        pluginWarn("订阅失败，添加记录时出现了一个问题：", e.toString())
+                    }
+                    cs.sendMessage(search.appName + '(' + search.appid + ')' + "订阅成功")
                 }
-                if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
-                cs.sendMessage(search.appName + '(' + search.appid + ')' + "订阅成功")
             } else {
                 // 此处开始写取消订阅
-                lockSubscribeMap.lock()
-                try {
-                    if (SteamhelperPluginData.subscribeMap[appid]?.get(botID)?.get(contactID) != null) {
-                        SteamhelperPluginData.subscribeMap[appid]?.get(botID)?.remove(contactID)
-                        cs.sendMessage(search.appName + '(' + search.appid + ")已取消订阅")
-                    } else {
-                        cs.sendMessage(search.appName + '(' + search.appid + ")您没有订阅此游戏")
+                lockSubscribeMap.withLock {
+                    try {
+                        if (SteamhelperPluginData.subscribeMap[appid]?.get(botID)?.get(contactID) != null) {
+                            SteamhelperPluginData.subscribeMap[appid]?.get(botID)?.remove(contactID)
+                            cs.sendMessage(search.appName + '(' + search.appid + ")已取消订阅")
+                        } else {
+                            cs.sendMessage(search.appName + '(' + search.appid + ")您没有订阅此游戏")
+                        }
+                    } catch (e: Exception) {
+                        pluginExceptionHandler("订阅取消", e)
+                        pluginWarn("取消订阅失败，清理记录时出现了一个问题：", e.toString())
                     }
-                } catch (e: Exception) {
-                    pluginExceptionHandler("订阅取消", e)
-                    pluginWarn("取消订阅失败，清理记录时出现了一个问题：", e.toString())
                 }
-                if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
             }
         } else {
             cs.sendMessage("暂不支持该渠道订阅操作")
@@ -397,28 +406,28 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
  */
 suspend fun getAllSubscribe(flag: Boolean, cs: CommandSender) {
     if (cs.bot?.id != null && cs.subject?.id != null) {
-        lockSubscribeMap.lock()
-        lockMapSub.lock()
         val sb = StringBuilder()
-        try {
-            val botID = cs.bot?.id!!
-            val contactID = cs.subject?.id!!
-            if (flag) sb.append("您目前的订阅有：\n")
-            else sb.append("取消了您的订阅：\n")
-            for (app in SteamhelperPluginData.subscribeMap.keys) {
-                if (SteamhelperPluginData.subscribeMap[app]?.get(botID)?.get(contactID) != null) {
-                    sb.append(mapSub[app]?.appName.toString() + '(' + mapSub[app]?.appid.toString() + ")\n")
-                    if (!flag) {
-                        SteamhelperPluginData.subscribeMap[app]?.get(botID)?.remove(contactID)
+        lockSubscribeMap.withLock {
+            lockMapSub.withLock {
+                try {
+                    val botID = cs.bot?.id!!
+                    val contactID = cs.subject?.id!!
+                    if (flag) sb.append("您目前的订阅有：\n")
+                    else sb.append("取消了您的订阅：\n")
+                    for (app in SteamhelperPluginData.subscribeMap.keys) {
+                        if (SteamhelperPluginData.subscribeMap[app]?.get(botID)?.get(contactID) != null) {
+                            sb.append(mapSub[app]?.appName.toString() + '(' + mapSub[app]?.appid.toString() + ")\n")
+                            if (!flag) {
+                                SteamhelperPluginData.subscribeMap[app]?.get(botID)?.remove(contactID)
+                            }
+                        }
                     }
+                } catch (e: Exception) {
+                    pluginExceptionHandler("全部订阅", e)
+                    pluginWarn("取消/查看全部订阅失败，操作记录时出现了一个问题：", e.toString())
                 }
             }
-        } catch (e: Exception) {
-            pluginExceptionHandler("全部订阅", e)
-            pluginWarn("取消/查看全部订阅失败，操作记录时出现了一个问题：", e.toString())
         }
-        if (lockMapSub.isHeldByCurrentThread) lockMapSub.unlock()
-        if (lockSubscribeMap.isHeldByCurrentThread) lockSubscribeMap.unlock()
         cs.sendMessage(sb.toString())
     } else {
         cs.sendMessage("暂不支持该渠道订阅操作")
