@@ -35,8 +35,17 @@ class EpicPromotions {
 
     /** 添加限免名单 */
     private fun addElement(element: JsonElement, startTime: Long, isToCurrent: Boolean) {
-        val mappings = element.asJsonObject["productSlug"].asString
-        val link = if (mappings == "[]") "未知"
+        val mappings =
+            if (!element.asJsonObject["productSlug"].isJsonNull && element.asJsonObject["productSlug"].asString != "[]") {
+                element.asJsonObject["productSlug"].asString
+            } else if (!element.asJsonObject["catalogNs"].asJsonObject["mappings"].isJsonNull &&
+                element.asJsonObject["catalogNs"].asJsonObject["mappings"].toString().isNotEmpty()
+            ) {
+                element.asJsonObject["catalogNs"].asJsonObject["mappings"].asJsonArray.get(0).asJsonObject["pageSlug"].asString
+            } else {
+                null
+            }
+        val link = if (mappings == null) "未知"
         else "https://store.epicgames.com/p/$mappings"
         val newPromotion = EpicGame(
             element.asJsonObject["title"].asString,
@@ -76,22 +85,25 @@ class EpicPromotions {
                             addElement(element, elementDate, false)
                         }
                     }
-                } else if (elementDate > 4000000000) {
+                } else {
                     // 特殊限免活动时，API会将其放置到最后
-                    var promotionalOffers = element.asJsonObject["promotions"].asJsonObject.get("promotionalOffers")
-                    if (promotionalOffers.asJsonArray.isEmpty) {
-                        promotionalOffers =
-                            element.asJsonObject["promotions"].asJsonObject.get("upcomingPromotionalOffers")
-                    }
-                    if (!promotionalOffers.asJsonArray.isEmpty) {
-                        promotionalOffers =
-                            promotionalOffers.asJsonArray[0].asJsonObject["promotionalOffers"].asJsonArray[0]
-                        val startDate = Instant.parse(promotionalOffers.asJsonObject["startDate"].asString).epochSecond
-                        val endDate = Instant.parse(promotionalOffers.asJsonObject["endDate"].asString).epochSecond
-                        if (nowDate in startDate..endDate) {
-                            addElement(element, startDate, true)
-                        } else if (nowDate < startDate) {
-                            addElement(element, startDate, false)
+                    if (!element.asJsonObject["promotions"].isJsonNull) {
+                        var promotionalOffers = element.asJsonObject["promotions"].asJsonObject.get("promotionalOffers")
+                        if (promotionalOffers.asJsonArray.isEmpty) {
+                            promotionalOffers =
+                                element.asJsonObject["promotions"].asJsonObject.get("upcomingPromotionalOffers")
+                        }
+                        if (!promotionalOffers.asJsonArray.isEmpty) {
+                            promotionalOffers =
+                                promotionalOffers.asJsonArray[0].asJsonObject["promotionalOffers"].asJsonArray[0]
+                            val startDate =
+                                Instant.parse(promotionalOffers.asJsonObject["startDate"].asString).epochSecond
+                            val endDate = Instant.parse(promotionalOffers.asJsonObject["endDate"].asString).epochSecond
+                            if (nowDate in startDate..endDate) {
+                                addElement(element, startDate, true)
+                            } else if (nowDate < startDate) {
+                                addElement(element, startDate, false)
+                            }
                         }
                     }
                 }

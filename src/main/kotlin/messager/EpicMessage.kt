@@ -25,7 +25,7 @@ val keywordsEpicPromoteList = arrayOf("<nm>", "<ds>", "<lk>", "<tf>", "<ts>")
 
 /** 获取Epic周免信息 */
 suspend fun getEpic(): String {
-    return if (epicPromote.current.isNotEmpty()) {
+    return if (epicPromote.current.isNotEmpty() || epicPromote.future.isNotEmpty()) {
         // 复制epicPromote
         var current: MutableList<EpicGame>
         var future: MutableList<EpicGame>
