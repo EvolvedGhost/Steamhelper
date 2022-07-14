@@ -37,6 +37,12 @@ fun pluginExceptionHandler(info: String, e: Exception) {
     }
 }
 
+fun pluginDebugHandler(info: String) {
+    if (SteamhelperPluginSetting.debug) {
+        println(info)
+    }
+}
+
 // 提供给一些建议的错误提示
 private fun exceptionTranslator(e: String): String {
     return if (e.contains("java.net.SocketTimeoutException: Read timed out"))

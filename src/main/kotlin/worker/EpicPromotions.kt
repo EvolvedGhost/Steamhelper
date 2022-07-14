@@ -68,7 +68,8 @@ class EpicPromotions {
         try {
             val json =
                 JsonParser.parseString(SSLHelper().getBody("https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions?locale=zh-cn"))
-                    .asJsonObject["data"].asJsonObject["Catalog"].asJsonObject["searchStore"].asJsonObject["elements"].asJsonArray
+                    .asJsonObject["data"].asJsonObject["Catalog"]
+                    .asJsonObject["searchStore"].asJsonObject["elements"].asJsonArray
             current.clear()
             future.clear()
             for (element in json) {
@@ -76,17 +77,14 @@ class EpicPromotions {
                 val nowDate = Instant.now().epochSecond
                 // 判断是否有效
                 if (kotlin.math.abs(elementDate - nowDate) < 604800) {
-                    // 判断是否在限免中（避免周年庆每天一个的情况）
-                    if (element.asJsonObject["price"].asJsonObject["totalPrice"].asJsonObject["discountPrice"].asInt == 0) {
+                    if (elementDate > nowDate) {
+                        addElement(element, elementDate, false)
+                    } else if (element.asJsonObject["price"].asJsonObject["totalPrice"].asJsonObject["discountPrice"].asInt == 0) {
                         addElement(element, elementDate, true)
-                    } else {
-                        // 判断是否是未来限免
-                        if (elementDate > nowDate) {
-                            addElement(element, elementDate, false)
-                        }
                     }
                 } else {
                     // 特殊限免活动时，API会将其放置到最后
+                    // 当一个游戏曾经限免过，前面if判断将失效
                     if (!element.asJsonObject["promotions"].isJsonNull) {
                         var promotionalOffers = element.asJsonObject["promotions"].asJsonObject.get("promotionalOffers")
                         if (promotionalOffers.asJsonArray.isEmpty) {
@@ -99,7 +97,9 @@ class EpicPromotions {
                             val startDate =
                                 Instant.parse(promotionalOffers.asJsonObject["startDate"].asString).epochSecond
                             val endDate = Instant.parse(promotionalOffers.asJsonObject["endDate"].asString).epochSecond
-                            if (nowDate in startDate..endDate) {
+                            if (nowDate in startDate..endDate &&
+                                element.asJsonObject["price"].asJsonObject["totalPrice"].asJsonObject["discountPrice"].asInt == 0
+                            ) {
                                 addElement(element, startDate, true)
                             } else if (nowDate < startDate) {
                                 addElement(element, startDate, false)
