@@ -15,6 +15,7 @@ import com.evolvedghost.mirai.steamhelper.messager.handler.setPush
 import com.evolvedghost.mirai.steamhelper.messager.handler.setSearch
 import com.evolvedghost.mirai.steamhelper.utils.*
 import com.evolvedghost.mirai.steamhelper.worker.SteamApp
+import com.evolvedghost.mirai.steamhelper.worker.SteamUserID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
@@ -146,9 +147,11 @@ suspend fun getCompare(AppNameOrAppid: Array<out String>): String {
         1 -> {
             //成功
         }
+
         0 -> {
             return "未找到相应的App"
         }
+
         else -> {
             pluginWarn("SteamHelper在搜索的时候得到了一个错误：", search.exception)
             return "搜索发生错误，如长期出现此信息请检查日志和机器人网络状况"
@@ -264,9 +267,11 @@ fun getSubscribe(app: SteamApp, flag: Int): String {
         0 -> {
             "涨价"
         }
+
         2 -> {
             "降价"
         }
+
         else -> {
             return "内部错误"
         }
@@ -328,10 +333,12 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
                         //成功
                         appid = search.appid!!.toInt()
                     }
+
                     0 -> {
                         cs.sendMessage("未找到相应的App")
                         return
                     }
+
                     else -> {
                         pluginWarn("SteamHelper在搜索的时候得到了一个错误：", search.exception)
                         cs.sendMessage("搜索发生错误，如长期出现此信息请检查日志和机器人网络状况")
@@ -362,7 +369,8 @@ suspend fun getSubscribe(flag: Boolean, cs: CommandSender, AppNameOrAppid: Array
                     // 对subscribeMap中进行添加
                     try {
                         if (!SteamhelperPluginData.subscribeMap.contains(appid)) {
-                            SteamhelperPluginData.subscribeMap[appid] = mutableMapOf(botID to mutableMapOf(contactID to 0))
+                            SteamhelperPluginData.subscribeMap[appid] =
+                                mutableMapOf(botID to mutableMapOf(contactID to 0))
                         } else if (!SteamhelperPluginData.subscribeMap[appid]!!.contains(botID)) {
                             SteamhelperPluginData.subscribeMap[appid]!![botID] = mutableMapOf(contactID to 0)
                         } else if (!SteamhelperPluginData.subscribeMap[appid]!![botID]!!.contains(contactID)) {
@@ -448,9 +456,11 @@ fun getSearch(AppNameOrAppid: Array<out String>): String {
         1 -> {
             //成功
         }
+
         0 -> {
             return "未找到相应的App"
         }
+
         else -> {
             pluginWarn("SteamHelper在搜索的时候得到了一个错误：", search.exception)
             return "搜索发生错误，如长期出现此信息请检查日志和机器人网络状况"
@@ -468,8 +478,34 @@ fun getSearch(AppNameOrAppid: Array<out String>): String {
                 arrayOf(search.appid, search.appName, search.appDescription)
             )
         }
+
         0 -> "搜索无结果"
         -1 -> "搜索失败，如长期出现此信息请检查日志和机器人网络状况"
         else -> "内部错误"
+    }
+}
+
+/** SteamUID替换关键词 */
+val keywordsSteamUID = arrayOf("<fid>", "<64id>", "<32id>", "<3id>", "<iid>", "<csid>", "<5mid>")
+
+/** 解析SteamUID */
+fun getSteamUID(SteamUID: String): String {
+    val uid = SteamUserID()
+    return if (uid.setSteamIdAuto(SteamUID)) {
+        replace(
+            SteamhelperPluginSetting.messageSteamUID,
+            keywordsSteamUID,
+            arrayOf(
+                uid.getSteamAccountId().toString(),
+                uid.getSteam64Id().toString(),
+                uid.getSteam32Id(),
+                uid.getSteam3Id(),
+                uid.getSteamInviteId(),
+                uid.getSteamCSGOId(),
+                uid.getSteamFiveMId()
+            )
+        )
+    } else {
+        "无法解析该ID"
     }
 }

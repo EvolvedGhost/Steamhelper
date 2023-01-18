@@ -252,6 +252,21 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
 
     @ValueDescription(
         """
+        SteamUID解析列表：
+        换行请使用\n，其他特殊字符同理，每项都会默认带换行
+        <fid>=好友码
+        <64id>=SteamID64
+        <32id>=SteamID32
+        <3id>=SteamID3
+        <iid>=邀请码
+        <csid>=CSGO码
+        <5mid>=FiveM码
+        """
+    )
+    val messageSteamUID: String by value("好友码：<fid>\nSteam64：<64id>\nSteam32：<32id>\nSteam3：<3id>\nCSGO码：<csid>\nFiveM码：<5mid>\n个人主页：https://s.team/p/<iid>")
+
+    @ValueDescription(
+        """
         Epic当前限免信息：
         换行请使用\n，其他特殊字符同理
         <cls>=当前限免名单（使用下面messageEpicPromoteList格式）

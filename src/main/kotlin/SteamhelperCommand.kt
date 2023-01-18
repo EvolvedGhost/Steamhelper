@@ -117,4 +117,10 @@ object SteamhelperCommand : CompositeCommand(
             sendMessage("你没有推送的权限")
         }
     }
+
+    @SubCommand("uid")
+    @Description("解析各种格式的SteamUID")
+    suspend fun CommandSender.uid(SteamUID: String) {
+        sendMessage(getSteamUID(SteamUID))
+    }
 }

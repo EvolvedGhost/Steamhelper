@@ -61,11 +61,18 @@ class SteamApp() {
                 val url =
                     "https://store.steampowered.com/search/?term=" + URLEncoder.encode(keyword, "utf-8") + "&cc=$area"
                 val get = SSLHelper().getDocument(url)
-                localAppid =
-                    get.getElementById("search_resultsRows")?.getElementsByTag("a")?.first()?.attr("data-ds-appid")
+                localAppid = get.getElementById("search_results")?.getElementsByTag("a")?.first()
+                    ?.attr("data-ds-appid")
                 if (!localAppid.isNullOrEmpty()) {
                     appid = localAppid
                     return 1
+                } else {
+                    localAppid =
+                        get.getElementById("search_resultsRows")?.getElementsByTag("a")?.first()?.attr("data-ds-appid")
+                    if (!localAppid.isNullOrEmpty()) {
+                        appid = localAppid
+                        return 1
+                    }
                 }
             } catch (e: Exception) {
                 pluginExceptionHandler("Steam应用搜索", e)
