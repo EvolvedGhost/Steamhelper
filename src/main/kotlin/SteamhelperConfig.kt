@@ -253,7 +253,7 @@ object SteamhelperPluginSetting : ReadOnlyPluginConfig("Steamhelper") {
     @ValueDescription(
         """
         SteamUID解析列表：
-        换行请使用\n，其他特殊字符同理，每项都会默认带换行
+        换行请使用\n，其他特殊字符同理
         <fid>=好友码
         <64id>=SteamID64
         <32id>=SteamID32
