@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 object Steamhelper : KotlinPlugin(JvmPluginDescription(
     id = "com.evolvedghost.mirai.steamhelper.steamhelper",
     name = "SteamHelper",
-    version = "1.0.11",
+    version = "1.0.12",
 ) {
     author("EvolvedGhost")
 }) {

@@ -1,13 +1,13 @@
 plugins {
-    val kotlinVersion = "1.7.10"
+    val kotlinVersion = "1.8.10"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
-    id("net.mamoe.mirai-console") version "2.13.3"
+    id("net.mamoe.mirai-console") version "2.14.0"
 }
 
 group = "com.evolvedghost.mirai.steamhelper"
-version = "1.0.11-A"
+version = "1.0.12"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")
@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jsoup:jsoup:1.15.3")
+    implementation("org.jsoup:jsoup:1.15.4")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.quartz-scheduler:quartz:2.3.2") {
         exclude(group = "org.slf4j")

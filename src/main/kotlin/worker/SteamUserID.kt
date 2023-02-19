@@ -49,8 +49,8 @@ class SteamUserID {
             'e' to 'v',
             'f' to 'w',
         )
-        for (i in 0..6) {
-            if(i == 3){
+        for (i in hex.indices) {
+            if (i == hex.length / 2) {
                 result.append('-')
             }
             val nextChar = dictionary[hex[i]] ?: return ""
@@ -96,7 +96,7 @@ class SteamUserID {
     }
 
     fun setSteamAccountId(id: Long): Boolean {
-        var tempId = id;
+        var tempId = id
         uidFlagA = (tempId % 2).toInt()
         tempId -= uidFlagA
         uidFlagB = (tempId / 2).toInt()
