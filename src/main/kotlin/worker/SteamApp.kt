@@ -4,7 +4,6 @@ import com.evolvedghost.mirai.steamhelper.steamhelper.area4currency
 import com.evolvedghost.mirai.steamhelper.utils.SSLHelper
 import com.evolvedghost.mirai.steamhelper.utils.pluginExceptionHandler
 import com.google.gson.JsonParser
-import java.net.URLEncoder
 
 /**
  * SteamApp相关操作
@@ -59,7 +58,7 @@ class SteamApp() {
         for (area in areas) {
             try {
                 val url =
-                    "https://store.steampowered.com/search/?term=" + URLEncoder.encode(keyword, "utf-8") + "&cc=$area"
+                    "https://store.steampowered.com/search/?term=$keyword&cc=$area"
                 val get = SSLHelper().getDocument(url)
                 localAppid = get.getElementById("search_results")?.getElementsByTag("a")?.first()
                     ?.attr("data-ds-appid")
