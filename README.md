@@ -14,6 +14,8 @@ Windows：`./gradlew.bat buildPlugin`
 
 Linux：`./gradlew buildPlugin`
 
+Mirai版本在2.12以下的用户需要向下兼容包，本项目Release并不会提供此类包，请自行编译，编译指令为：`./gradlew buildPluginLegacy`
+
 编译好的jar文件可以在`/build/mirai`下找到
 
 ## 已知问题
