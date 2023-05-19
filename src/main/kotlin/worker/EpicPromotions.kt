@@ -39,7 +39,7 @@ class EpicPromotions {
             if (!element.asJsonObject["productSlug"].isJsonNull && element.asJsonObject["productSlug"].asString != "[]") {
                 element.asJsonObject["productSlug"].asString
             } else if (!element.asJsonObject["catalogNs"].asJsonObject["mappings"].isJsonNull &&
-                element.asJsonObject["catalogNs"].asJsonObject["mappings"].toString().isNotEmpty()
+                element.asJsonObject["catalogNs"].asJsonObject["mappings"].asJsonArray.size() != 0
             ) {
                 element.asJsonObject["catalogNs"].asJsonObject["mappings"].asJsonArray.get(0).asJsonObject["pageSlug"].asString
             } else {
