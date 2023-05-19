@@ -55,8 +55,8 @@ suspend fun getWeek(): String {
         var timestamp: Long?
         var url: String
         lockSteamWeek.withLock {
-            titleArr = steamWeek.titleArr.clone()
-            linkArr = steamWeek.linkArr.clone()
+            titleArr = steamWeek.titleArr.toTypedArray()
+            linkArr = steamWeek.linkArr.toTypedArray()
             timestamp = steamWeek.timestamp
             url = steamWeek.url
         }

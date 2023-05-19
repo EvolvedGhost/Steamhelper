@@ -21,10 +21,10 @@ class SteamWeek {
     var exception = String()
 
     /** Steam每周榜单游戏名 */
-    var titleArr = arrayOfNulls<String>(10)
+    var titleArr = mutableListOf<String>()
 
     /** Steam每周榜单游戏链接 */
-    var linkArr = arrayOfNulls<String>(10)
+    var linkArr = mutableListOf<String>()
 
     /** Steam每周榜单是否初始化 */
     var isInit = false
@@ -34,20 +34,24 @@ class SteamWeek {
      * @return Boolean 是否成功
      */
     fun refreshSteamWeeklyTopSellers(): Boolean {
+        val tempTitleArr = mutableListOf<String>()
+        val tempLinkArr = mutableListOf<String>()
         return try {
             // 连接SteamApi
             val get = SSLHelper().getDocument(url)
             // 获取Steam每周榜单游戏名和链接，并预处理链接
             val items = get.getElementsByTag("item")
-            for (i in 0 until 10) {
-                titleArr[i] = items[i].getElementsByTag("title").text()
-                linkArr[i] = items[i].getElementsByTag("link").text().substringBefore("?t=")
+            for (i in 0 until items.size) {
+                tempTitleArr.add(items[i].getElementsByTag("title").text())
+                tempLinkArr.add(items[i].getElementsByTag("link").text().substringBefore("?t="))
             }
             // 获取Steam每周榜单更新时间
             val textDate = get.getElementsByTag("pubDate").first()?.text()
             // 格式化Steam大促时间为时间戳（格式样例：Sun, 20 Feb 2022 00:00:00 -0800）
             timestamp = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US).parse(textDate).time
             isInit = true
+            linkArr = tempLinkArr
+            titleArr = tempTitleArr
             true
         } catch (e: Exception) {
             pluginExceptionHandler("Steam周促获取", e)
