@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.github.evolvedghost.mirai.steamhelper"
-version = "2.0.0"
+version = "2.0.0-Beta01"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")
@@ -15,4 +15,5 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jsoup:jsoup:1.21.2")
 }
